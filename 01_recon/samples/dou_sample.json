@@ -1,0 +1,400 @@
+{
+  "feed": [
+    {
+      "title": "Інженер машинного навчання ML Python до IT-підрозділу ЗСУ",
+      "company": "12-й ОЦСП",
+      "salary_raw": NaN,
+      "salary_min": NaN,
+      "salary_max": NaN,
+      "remote": false,
+      "abroad": false,
+      "cities": [],
+      "link": "https://jobs.dou.ua/companies/12-ocsp/vacancies/365176/",
+      "published": "Sat, 17 Oct 2026 14:32:20 +0300"
+    },
+    {
+      "title": "Middle/Senior Python Backend Engineer (Real-Time Data & AI)",
+      "company": "Suntech Innovation",
+      "salary_raw": NaN,
+      "salary_min": NaN,
+      "salary_max": NaN,
+      "remote": true,
+      "abroad": true,
+      "cities": [
+        "Київ"
+      ],
+      "link": "https://jobs.dou.ua/companies/suntech-innovation/vacancies/376945/",
+      "published": "Fri, 16 Oct 2026 16:32:31 +0300"
+    },
+    {
+      "title": "Senior Full-Stack Engineer (Angular&Python)",
+      "company": "Altamira",
+      "salary_raw": NaN,
+      "salary_min": NaN,
+      "salary_max": NaN,
+      "remote": true,
+      "abroad": false,
+      "cities": [
+        "Київ",
+        "Братислава (Словаччина)"
+      ],
+      "link": "https://jobs.dou.ua/companies/altamira-ai/vacancies/376921/",
+      "published": "Fri, 16 Oct 2026 14:52:01 +0300"
+    },
+    {
+      "title": "Middle Full Stack Developer",
+      "company": "Rayton",
+      "salary_raw": "$2200–2800",
+      "salary_min": 2200.0,
+      "salary_max": 2800.0,
+      "remote": true,
+      "abroad": false,
+      "cities": [],
+      "link": "https://jobs.dou.ua/companies/rayton/vacancies/376916/",
+      "published": "Fri, 16 Oct 2026 14:29:13 +0300"
+    },
+    {
+      "title": "Senior Python Developer (ERP / Odoo)",
+      "company": "Gonser",
+      "salary_raw": NaN,
+      "salary_min": NaN,
+      "salary_max": NaN,
+      "remote": false,
+      "abroad": false,
+      "cities": [
+        "Львів"
+      ],
+      "link": "https://jobs.dou.ua/companies/gonser/vacancies/376870/",
+      "published": "Fri, 16 Oct 2026 10:54:52 +0300"
+    },
+    {
+      "title": "QA Automation Engineer (Python / API / Mobile) | Content Farm",
+      "company": "WorkHold.AI",
+      "salary_raw": "$1300–1500",
+      "salary_min": 1300.0,
+      "salary_max": 1500.0,
+      "remote": true,
+      "abroad": false,
+      "cities": [],
+      "link": "https://jobs.dou.ua/companies/workeron-ai/vacancies/376455/",
+      "published": "Fri, 16 Oct 2026 10:06:33 +0300"
+    },
+    {
+      "title": "R&D Infrastructure Engineer in Software Infrastructure Team (#1228)",
+      "company": "ZONE3000",
+      "salary_raw": NaN,
+      "salary_min": NaN,
+      "salary_max": NaN,
+      "remote": true,
+      "abroad": false,
+      "cities": [],
+      "link": "https://jobs.dou.ua/companies/zone3000/vacancies/369762/",
+      "published": "Fri, 16 Oct 2026 09:58:50 +0300"
+    },
+    {
+      "title": "Engineering Manager (Python)",
+      "company": "AltexSoft",
+      "salary_raw": NaN,
+      "salary_min": NaN,
+      "salary_max": NaN,
+      "remote": false,
+      "abroad": true,
+      "cities": [],
+      "link": "https://jobs.dou.ua/companies/altexsoft/vacancies/376836/",
+      "published": "Thu, 15 Oct 2026 18:37:30 +0300"
+    },
+    {
+      "title": "Full-Stack Engineer (Python / React)",
+      "company": "Sigma Software",
+      "salary_raw": NaN,
+      "salary_min": NaN,
+      "salary_max": NaN,
+      "remote": true,
+      "abroad": false,
+      "cities": [
+        "Київ",
+        "Львів",
+        "Вінниця",
+        "Івано-Франківськ",
+        "Тернопіль",
+        "Чернівці",
+        "Варшава (Польща)",
+        "Краків (Польща)"
+      ],
+      "link": "https://jobs.dou.ua/companies/sigma-software/vacancies/376832/",
+      "published": "Thu, 15 Oct 2026 18:15:53 +0300"
+    },
+    {
+      "title": "Middle/Senior Python Engineer",
+      "company": "Evolved Ideas",
+      "salary_raw": NaN,
+      "salary_min": NaN,
+      "salary_max": NaN,
+      "remote": true,
+      "abroad": false,
+      "cities": [],
+      "link": "https://jobs.dou.ua/companies/evolved-ideas/vacancies/376823/",
+      "published": "Thu, 15 Oct 2026 17:44:57 +0300"
+    },
+    {
+      "title": "Middle Python Developer",
+      "company": "Ajax Systems",
+      "salary_raw": NaN,
+      "salary_min": NaN,
+      "salary_max": NaN,
+      "remote": false,
+      "abroad": false,
+      "cities": [
+        "Київ"
+      ],
+      "link": "https://jobs.dou.ua/companies/ajax-systems/vacancies/376794/",
+      "published": "Thu, 15 Oct 2026 15:53:10 +0300"
+    },
+    {
+      "title": "Middle+/Senior Software Engineer (Python / Compilers)",
+      "company": "Haiqu",
+      "salary_raw": NaN,
+      "salary_min": NaN,
+      "salary_max": NaN,
+      "remote": true,
+      "abroad": false,
+      "cities": [
+        "Львів"
+      ],
+      "link": "https://jobs.dou.ua/companies/haiqu/vacancies/376784/",
+      "published": "Thu, 15 Oct 2026 15:05:05 +0300"
+    },
+    {
+      "title": "Python Developer (Sports sphere)",
+      "company": "ISsoft Ukraine",
+      "salary_raw": NaN,
+      "salary_min": NaN,
+      "salary_max": NaN,
+      "remote": true,
+      "abroad": true,
+      "cities": [
+        "Львів"
+      ],
+      "link": "https://jobs.dou.ua/companies/issoft/vacancies/366030/",
+      "published": "Thu, 15 Oct 2026 14:53:15 +0300"
+    },
+    {
+      "title": "Senior Python Engineer (4889)",
+      "company": "Ciklum",
+      "salary_raw": NaN,
+      "salary_min": NaN,
+      "salary_max": NaN,
+      "remote": true,
+      "abroad": false,
+      "cities": [
+        "Київ",
+        "Львів"
+      ],
+      "link": "https://jobs.dou.ua/companies/ciklum/vacancies/376773/",
+      "published": "Thu, 15 Oct 2026 14:33:40 +0300"
+    },
+    {
+      "title": "Forward Deployed Fullstack Engineer (React & Python)",
+      "company": "Proxet",
+      "salary_raw": NaN,
+      "salary_min": NaN,
+      "salary_max": NaN,
+      "remote": true,
+      "abroad": false,
+      "cities": [],
+      "link": "https://jobs.dou.ua/companies/proxet/vacancies/376769/",
+      "published": "Thu, 15 Oct 2026 14:13:54 +0300"
+    },
+    {
+      "title": "Middle Python Engineer",
+      "company": "ORIL",
+      "salary_raw": NaN,
+      "salary_min": NaN,
+      "salary_max": NaN,
+      "remote": true,
+      "abroad": false,
+      "cities": [
+        "Львів"
+      ],
+      "link": "https://jobs.dou.ua/companies/oril/vacancies/356995/",
+      "published": "Thu, 15 Oct 2026 13:51:59 +0300"
+    },
+    {
+      "title": "Junior Python (Developer in test Video)",
+      "company": "Ajax Systems",
+      "salary_raw": NaN,
+      "salary_min": NaN,
+      "salary_max": NaN,
+      "remote": false,
+      "abroad": false,
+      "cities": [
+        "Київ"
+      ],
+      "link": "https://jobs.dou.ua/companies/ajax-systems/vacancies/376761/",
+      "published": "Thu, 15 Oct 2026 13:46:27 +0300"
+    },
+    {
+      "title": "Програміст",
+      "company": "427-а окрема бригада безпілотних систем Рарог",
+      "salary_raw": "$1150–1650",
+      "salary_min": 1150.0,
+      "salary_max": 1650.0,
+      "remote": false,
+      "abroad": false,
+      "cities": [],
+      "link": "https://jobs.dou.ua/companies/427-i-okremii-polk-bezpilotnih-sistem-rarog/vacancies/322522/",
+      "published": "Thu, 15 Oct 2026 13:30:01 +0300"
+    },
+    {
+      "title": "Middle AI/Python Engineer",
+      "company": "Geniusee",
+      "salary_raw": NaN,
+      "salary_min": NaN,
+      "salary_max": NaN,
+      "remote": true,
+      "abroad": false,
+      "cities": [
+        "Київ",
+        "Львів"
+      ],
+      "link": "https://jobs.dou.ua/companies/geniusee/vacancies/369681/",
+      "published": "Thu, 15 Oct 2026 12:43:45 +0300"
+    },
+    {
+      "title": "Senior Software Engineer (Python)",
+      "company": "Quantum",
+      "salary_raw": NaN,
+      "salary_min": NaN,
+      "salary_max": NaN,
+      "remote": true,
+      "abroad": false,
+      "cities": [
+        "Київ",
+        "Львів",
+        "Гданськ (Польща)",
+        "Варшава (Польща)"
+      ],
+      "link": "https://jobs.dou.ua/companies/quantum/vacancies/376703/",
+      "published": "Wed, 14 Oct 2026 23:36:04 +0300"
+    },
+    {
+      "title": "Automation Specialist (Make, n8n, Python)",
+      "company": "Glorium Technologies",
+      "salary_raw": NaN,
+      "salary_min": NaN,
+      "salary_max": NaN,
+      "remote": true,
+      "abroad": false,
+      "cities": [],
+      "link": "https://jobs.dou.ua/companies/glorium-technologies-corp/vacancies/376697/",
+      "published": "Wed, 14 Oct 2026 20:02:20 +0300"
+    },
+    {
+      "title": "Senior Python Engineer",
+      "company": "Adaptiq",
+      "salary_raw": NaN,
+      "salary_min": NaN,
+      "salary_max": NaN,
+      "remote": true,
+      "abroad": false,
+      "cities": [],
+      "link": "https://jobs.dou.ua/companies/adaptiq/vacancies/376679/",
+      "published": "Wed, 14 Oct 2026 17:47:35 +0300"
+    },
+    {
+      "title": "Senior Fullstack Developer (Python + React)",
+      "company": "Anadea",
+      "salary_raw": NaN,
+      "salary_min": NaN,
+      "salary_max": NaN,
+      "remote": true,
+      "abroad": false,
+      "cities": [],
+      "link": "https://jobs.dou.ua/companies/anadea/vacancies/376609/",
+      "published": "Wed, 14 Oct 2026 12:33:35 +0300"
+    },
+    {
+      "title": "Senior Backend Engineer — Python/LLM/AI Infrastructure",
+      "company": "Anadea",
+      "salary_raw": NaN,
+      "salary_min": NaN,
+      "salary_max": NaN,
+      "remote": true,
+      "abroad": false,
+      "cities": [],
+      "link": "https://jobs.dou.ua/companies/anadea/vacancies/376605/",
+      "published": "Wed, 14 Oct 2026 12:24:49 +0300"
+    },
+    {
+      "title": "Senior Python Developer [+React]",
+      "company": "Newsoft",
+      "salary_raw": NaN,
+      "salary_min": NaN,
+      "salary_max": NaN,
+      "remote": false,
+      "abroad": false,
+      "cities": [
+        "Львів"
+      ],
+      "link": "https://jobs.dou.ua/companies/newsoft/vacancies/376520/",
+      "published": "Tue, 13 Oct 2026 17:27:25 +0300"
+    }
+  ],
+  "pages": [
+    {
+      "title": "Інженер машинного навчання ML Python до IT-підрозділу ЗСУ",
+      "company": "12-й ОЦСП",
+      "salary": null,
+      "place": null,
+      "date": "17 жовтня 2026 сили оборони",
+      "description": "Огляд Вакансія передбачає службу у 12-му окремому центрі спеціального призначення. Підрозділ проводить операції на всіх напрямках. Обов’язки розробка та тренування моделей машинного навчання (класифікація, регресія, кластеризація тощо) попередня обробка, аналіз і візуалізація даних розгортання моделей у продакшн-середовищі (REST API, Docker, CI/CD) моніторинг ефективності моделей і періодичне перенавчання співпраця з аналітиками, дата-саєнтистами та розробниками BE Вимоги підтверджений комерційний досвід програмування на Python від 2 років глибоке розуміння теорії машинного навчання (NumPy, Pandas, Scikit-learn, PyTorch або TensorFlow) розуміння принципів статистики, математичного аналізу, теорії ймовірності навички роботи з базами даних (SQL, PostgreSQL, Chroma) досвід роботи з API, Git, Docker знання англійської мови від Upper Intermediate Умови мобілізація до кінця воєнного стану можливість переведення чинних військовослужбовців за згодою безпосереднього командира грошове забезпечення згідно зі стандартами, прийнятими в Збройних Силах України соціальні пільги згідно з чинним законодавством можливість професійного розвитку й кар’єрного зростання супроводження на всьому етапі мобілізації Для відгуку на вакансію заповнюйте форму, натиснувши на кнопку нижче",
+      "apply_type": "on_site",
+      "apply_href": "#apply",
+      "url": "https://jobs.dou.ua/companies/12-ocsp/vacancies/365176/"
+    },
+    {
+      "title": "Middle/Senior Python Backend Engineer (Real-Time Data & AI)",
+      "company": "Suntech Innovation",
+      "salary": null,
+      "place": "Київ, за кордоном, віддалено",
+      "date": "16 жовтня 2026",
+      "description": "Build and own high-throughput, event-driven Python services powering real-time fraud detection, recommendations, personalization, and GenAI across a multi-product SaaS platform. About us We are a product R&D company that creates solutions for the dynamic iGaming ecosystem. Our mission is to build cutting-edge platforms that reinvent the iGaming industry. About the team We are a focused engineering team of 5 to 9 people at a multi-product tech SaaS company. We work across personalization, recommendation, fraud detection, and some GenAI, through real- time, near-real-time, and batch pipelines. The team is a blend of Python backend engineers, ML engineers, QA (manual and automation), a data engineer, and data scientists. Our shared mandate is to take experimentation from our data scientists and turn it into robust, production- grade systems, either as standalone services or integrated into wider platforms. The role You will build and operate production backend systems alongside senior engineers and a hands- on engineering manager, owning your work end to end and growing into the harder problems. The systems you work on are either part of a larger SaaS backend or run as standalone services: batch and event-driven pipelines, stream consumers, feature stores, REST APIs, scheduled jobs and background workers. Responsibilities • Design and build production Python services: APIs, stream consumers, pipelines, feature stores, scheduled jobs, background workers • Write and tune the SQL and schemas these services depend on • Uphold engineering standards: code quality, testing, observability, deployment discipline • Productionize data scientists’ experimentation into reliable services • Diagnose and fix problems in production • Contribute to design discussions and the implementation approach for the systems you work on • Review code and help raise the bar for what the team ships • Take part in the team’s on-call rotation for the systems you build and operate Requirements • 3+ years of backend engineering experience • Strong Python: async, data processing, and working with Redis, Kafka and database clients • Deep database skills — non-trivial SQL, query plans, index design, transactions and isolation levels, and concurrency • Experience across relational and non-relational stores, and when to choose which • Good working knowledge of Docker and CI/CD, enough to partner well with DevOps • Experience owning a service in production Nice to have • Graph databases (Neo4j or similar) • PostgreSQL internals: MVCC, autovacuum and bloat, partitioning, connection pooling • PySpark, Databricks • Kubernetes • Experience building LLM-powered systems, including the vector stores behind them • Fraud detection, recsys, or personalization systems experience • Prometheus and Grafana • SaaS or high-scale product domain experience Why join us • Work on high-scale, high-throughput backend systems • Broad range of technologies, stacks, and problems • Take experimentation from data scientists and turn it into production systems • A strong engineering culture that values technical depth and ownership • A technically strong environment with a modern stack and a mature Agile culture • High autonomy, decision-making authority, and close cooperation with leadership • Room to contribute your own ideas for improvement and see them implemented • Flexibility through hybrid and remote working • A distributed team across Ukraine and UAE • Discretionary annual bonus, based on individual, team, and company performance • Comprehensive medical insurance • Annual leave • Learning and conference budget • Company-paid AI coding assistant Interview stages 1. HR interview (30 minutes) — initial conversation about your experience, career goals, and cultural fit 2. Technical interview (1 hour) — in-depth technical interview covering relevant skills 3. Technical design interview (1.5 hours) — system and database design 4. Final interview (30 minutes) — a discussion with the hiring manager, focusing on role- specific competencies and alignment with company values Reference check & job offer",
+      "apply_type": "external",
+      "apply_href": "https://dou.ua/goto/vacancy/?id=376945",
+      "url": "https://jobs.dou.ua/companies/suntech-innovation/vacancies/376945/"
+    },
+    {
+      "title": "Senior Full-Stack Engineer (Angular&Python)",
+      "company": "Altamira",
+      "salary": null,
+      "place": "Київ, Братислава (Словаччина), віддалено",
+      "date": "16 жовтня 2026",
+      "description": "We are looking for a Senior Full-Stack Engineer (Angular&Python) to join a team building a Pricing Framework, a platform that calculates and manages pricing based on technical data and rule-based logic. The system brings together a modern Angular frontend, a Python backend, and integrations with external systems through REST APIs and asynchronous data flows. As part of a cross-functional team, you will work on new features and the continued development of the platform. We expect you to independently deliver end-to-end features across the frontend and backend and take an active part in technical discussions. The role calls for strong hands-on development skills, along with the ability to work within an existing technical structure, assess it critically and improve it together with the team. Requirements Proven experience as a Fullstack Developer, with a focus on maintainable, modular architectures Excellent knowledge of Angular and hands-on experience in frontend development Willingness and motivation to actively contribute to frontend development Strong backend expertise in Python, particularly FastAPI Solid experience with REST APIs, JSON, and authentication mechanisms Experience integrating external systems and handling asynchronous data flows (e.g. Kafka) Familiarity with CI/CD, Git and structured deployment processes A proactive, team-oriented personality with strong communication skills and a hands-on mindset Nice to have Experience in the energy sector, the pricing domain or processing technical time series Knowledge of percentile-based or rule-based calculation logic Experience working in cross-functional teams Responsibilities Develop new features within the Pricing Framework, covering frontend, backend and interface logic Integrate external systems via REST APIs, including authentication and parameter control Follow established architecture and development standards, while contributing ideas and improvements to technical discussions Support requirements analysis and the design of monitoring strategies (e.g. with Datadog) Collaborate closely with the Product Owner and fellow developers",
+      "apply_type": "external",
+      "apply_href": "https://dou.ua/goto/vacancy/?id=376921",
+      "url": "https://jobs.dou.ua/companies/altamira-ai/vacancies/376921/"
+    },
+    {
+      "title": "Middle Full Stack Developer",
+      "company": "Rayton",
+      "salary": "$2200–2800",
+      "place": "віддалено",
+      "date": "16 жовтня 2026 бронювання",
+      "description": "We are looking for a Middle strong Full Stack Developer. About RAYTON RAYTON is a leading Ukrainian energy engineering group specializing in commercial solar power plants and Battery Energy Storage Systems (BESS). We design and deliver turnkey energy solutions that help businesses achieve energy independence across Ukraine, Europe, the United States, and the Middle East. With over 2,500 completed projects, RAYTON has established a strong track record of delivering energy solutions for major companies, including OKKO, KyivGuma, and Velmart, using Tier-1 equipment. As we continue to expand our energy solutions and energy storage business, we are looking for a Full-Stack Developer (Middle Strong) to join our team and contribute to the development of software solutions supporting our technical and business operations. About the Role We are looking for a Full-Stack Developer with strong Python backend skills and practical experience in modern frontend development. You will work across the entire application stack, building and maintaining backend services, developing user interfaces, and implementing real-time communication capabilities. This role involves working with Python, FastAPI, React, and TypeScript, as well as relational databases and communication protocols such as MQTT and WebSockets. Key Responsibilities Develop and maintain backend services and APIs using Python and FastAPI. Build and improve frontend applications using React and TypeScript. Work with relational databases, including database modeling, queries, and schema migrations. Implement real-time communication features using MQTT and WebSockets. Deploy and maintain applications in Docker-based and Linux environments. Collaborate with the team to deliver reliable, maintainable, and scalable software solutions. Requirements Solid commercial experience with Python and FastAPI. Practical experience with SQLAlchemy and relational databases, preferably MySQL or MariaDB. Experience with React and TypeScript. Understanding of REST API development and backend/frontend integration. Familiarity with database migrations using Alembic. Experience with Docker and Linux environments. Knowledge of real-time communication protocols such as MQTT and WebSockets. Strong problem-solving skills and the ability to work independently. Nice to Have Experience with CI/CD pipelines. Familiarity with monitoring, logging, and production troubleshooting. Experience developing applications involving IoT devices, energy systems, or real-time data processing. What We Offer The opportunity to contribute to software solutions within an international energy engineering business. Work with a modern technology stack covering backend, frontend, databases, and real-time communication. Opportunities to take ownership of technical solutions and influence implementation decisions. Collaboration with a team working on real-world engineering and energy projects. Interested? If you enjoy building reliable full-stack applications, solving complex technical challenges, and working with modern backend and frontend technologies, we would be happy to hear from you.",
+      "apply_type": "on_site",
+      "apply_href": "#apply",
+      "url": "https://jobs.dou.ua/companies/rayton/vacancies/376916/"
+    },
+    {
+      "title": "Senior Python Developer (ERP / Odoo)",
+      "company": "Gonser",
+      "salary": null,
+      "place": "Львів",
+      "date": "16 жовтня 2026",
+      "description": "Senior Python Developer (ERP / Odoo) Full-time · Long-term · Remote-friendly · Required visits to Lviv Gonser is looking for an experienced Senior Python Developer to build and own an Odoo Enterprise-based backup system for our e-commerce operations. This is a full-time, long-term role with flexibility to work remotely and required visits to Lviv when needed. We believe that human expertise matters and is valued, ownership matters and is valued, and agency matters and is valued. We’re not trying to replace devs with clankers (AI), and we’re looking for people who don’t necessarily go along with the mainstream, the hype of AI bros, or the doom and gloom about the future of software engineering. About the role Your first focus will be building an Odoo Enterprise-based backup system for our e-commerce operations, working closely with our existing development team. You’ll report directly to the CTO, collaborate with him on architecture and key technical decisions, and work with business teams to understand their workflows. The first milestone is a reliable fallback that lets customers continue to order, pay and receive their goods if our existing platform becomes unavailable. This is a long-term engineering role, with the backup system as its first phase and further development of the platform over time. You’ll take primary responsibility for implementation and stay hands-on with development. As the project evolves, the team working on it may expand, with opportunities to help shape its technical direction and mentor new engineers. Use standard Odoo features where appropriate and build custom modules and integrations where needed Build reliable data synchronisation, including failure detection, safe retries, recovery and consistency checks Work with the webshop team on interfaces and with the infrastructure owner on deployment, monitoring, troubleshooting and failover testing Document architecture, integrations and recovery procedures, and automate tests for critical workflows and data integrity Occasionally build small internal scripts and automations, while keeping the ERP as your primary focus Requirements Strong Python skills and experience building production systems Experience designing and delivering operational or ERP-like workflows and integrations Backend architecture, modular design, and maintainable code Relational databases: data modelling, migrations, query optimisation, and data integrity API integrations and reliable data synchronisation Background processing, retries, and recovery from failures Automated testing for critical workflows and integrations Experience with CI/CD pipelines You use Linux as your daily working environment (or at least MacOS) Permissions, access control, and secure handling of sensitive data Git in a team environment Clear technical documentation and comfort reading unfamiliar systems Ability to understand business workflows and turn them into technical solutions Working English for calls and written communication with Swiss colleagues Ability to travel to Lviv when needed, including visits of one to two weeks during the initial architecture phase, and for further visits when needed Nice to have Odoo development or implementation experience Experience with Odoo modules, UI development, or version upgrades E-commerce experience PostgreSQL Docker is a strong plus Based in Lviv or willing to relocate Odoo experience is optional. We provide dedicated learning time and paid learning materials, if needed. Technologies & Tools Python 3.12+ Odoo Enterprise PostgreSQL 16+ Linux API integrations and automated testing Git and CI/CD We’re probably a good fit for each other if: You have your own opinion and stand by it — but you change it if someone presents better arguments. You’d rather ask an uncomfortable question now than release a low-quality feature later. You use AI very, very carefully, understanding where it’s appropriate and where it’s not; AI is a tool, not a replacement for your own thinking. You step away from the screen to think. Some of your best solutions happen on paper, during a walk, or in the shower. Maybe you even know who Rich Hickey is? (: You put yourself in the user’s shoes before writing even a single line of code. When you see that something is wrong with a requirement, you speak up instead of silently building something that isn’t needed. We are offering Competitive salary, paid time off, and sick leave Offices with power stations & internet, just in case russia starts hitting our energy grid again Salary reviews at least once a year, but potentially more often We’ll provide you with everything you need for productive work: software licenses, hardware, and any other gear you might need The opportunity to grow however you like. You have the chance to move up to a team lead position if that is what you want (and we will help you with that). If you want to stay strictly in engineering — that is also a completely viable path Flat-ish structure inside the department — titles mean different responsibilities and maybe different levels of expertise. Definitely not a rank Opinionated and lightweight processes that you can influence Dedicated time for system updates and refactoring — who likes rotting legacy code, right? All sorts of company events and activities, in case you want to do something together during the holidays or outside of them Hiring process A short interview with HR, a technical interview with the CTO where we explain the project and discuss a realistic ERP problem, and a final interview with the executive director of the Ukrainian branch. Then, an offer. There is no take-home assignment. We are ready to hire as soon as we find the right person; the start date can accommodate their availability. Please send your CV and a few sentences about an operational system or integration you personally designed and delivered. A LinkedIn profile is welcome but optional. About the company Gonser AG ( gonser.ch ) has been operating very successfully in the Swiss online trade since 2009 and is currently an international group of companies with over 200 employees. GONSER.CH offers a wide range of products for garden, home, and leisure. Our recipe for success: fair prices, fast delivery, and a motivated team that ensures the delivery of goods to over 1 million end consumers in Switzerland. Join us to work on exciting projects, enhance your skills, and be a part of a supportive and innovative team!",
+      "apply_type": "on_site",
+      "apply_href": "#apply",
+      "url": "https://jobs.dou.ua/companies/gonser/vacancies/376870/"
+    }
+  ]
+}

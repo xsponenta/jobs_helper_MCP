@@ -1,0 +1,38 @@
+# Дані кандидата для автозаповнення форм відгуку.
+# Скопіюй у корінь репозиторію як candidate.yaml (він у .gitignore) і заповни.
+# Поле, якого тут немає, агент НЕ вигадує: форма поверне needs_input.
+
+personal:
+  first_name: ""
+  last_name: ""
+  email: ""
+  phone: ""                 # у міжнародному форматі, +380...
+  city: ""
+  country: "Ukraine"
+
+links:
+  linkedin: ""              # Djinni вимагає LinkedIn або резюме для відгуку
+  github: ""
+  portfolio: ""
+
+job_preferences:
+  desired_salary_usd: null  # число на місяць; ATS часто питають "salary expectations"
+  notice_period: ""         # напр. "2 weeks", "1 month"
+  available_from: ""        # YYYY-MM-DD
+  work_mode: []             # remote / hybrid / onsite
+  relocation: null          # true / false
+
+languages:
+  english: ""               # A2 / B1 / B2 / C1 / C2
+  ukrainian: "native"
+
+# Чутливі питання: агент бере відповідь ТІЛЬКИ звідси, інакше питає людину.
+sensitive:
+  work_authorization: {}    # напр. {"EU": false, "US": false, "Ukraine": true}
+  requires_visa_sponsorship: null
+  can_travel_abroad: null   # для чоловіків в Україні часто питають окремо
+
+# Стандартні відповіді на часті питання форм.
+answers:
+  how_did_you_hear: ""      # напр. "DOU", "Djinni" — підставляється за джерелом вакансії
+  consent_to_processing: null   # згода на обробку персональних даних; тільки людина

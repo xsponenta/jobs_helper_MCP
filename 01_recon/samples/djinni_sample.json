@@ -1,0 +1,389 @@
+{
+  "pages": [
+    {
+      "title": "Python  Developer",
+      "company": "PLANEKS",
+      "date_posted": "2026-10-16T20:44:09.666586",
+      "valid_through": "2026-11-15T20:44:09.666586",
+      "employment_type": "FULL_TIME",
+      "location_type": "TELECOMMUTE",
+      "applicant_location": {
+        "@type": "AdministrativeArea",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "UA"
+        }
+      },
+      "experience_months": 60.0,
+      "salary": {
+        "@type": "MonetaryAmount",
+        "currency": "USD",
+        "maxValue": 5000,
+        "minValue": 3000
+      },
+      "category": "Python",
+      "direct_apply": true,
+      "apply_form_fields": [
+        {
+          "tag": "input",
+          "type": "hidden",
+          "name": "anon_apply",
+          "required": false
+        },
+        {
+          "tag": "textarea",
+          "type": null,
+          "name": "message",
+          "required": false
+        },
+        {
+          "tag": "input",
+          "type": "email",
+          "name": "email",
+          "required": true
+        },
+        {
+          "tag": "input",
+          "type": "text",
+          "name": "name",
+          "required": false
+        },
+        {
+          "tag": "input",
+          "type": "hidden",
+          "name": "csrfmiddlewaretoken",
+          "required": false
+        }
+      ],
+      "jsonld_keys": [
+        "@context",
+        "@type",
+        "applicantLocationRequirements",
+        "category",
+        "datePosted",
+        "description",
+        "directApply",
+        "employmentType",
+        "estimatedSalary",
+        "experienceRequirements",
+        "hiringOrganization",
+        "identifier",
+        "industry",
+        "jobLocationType",
+        "title",
+        "url",
+        "validThrough"
+      ],
+      "url": "https://djinni.co/jobs/782187-python-developer/"
+    },
+    {
+      "title": "Senior Python Backend Engineer",
+      "company": "Verbit",
+      "date_posted": "2026-10-16T17:12:07.439667",
+      "valid_through": "2026-11-15T17:12:07.439667",
+      "employment_type": "FULL_TIME",
+      "location_type": "TELECOMMUTE",
+      "applicant_location": {
+        "@type": "AdministrativeArea",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": null,
+          "addressLocality": null,
+          "addressRegion": "Europe",
+          "postalCode": null
+        }
+      },
+      "experience_months": 84.0,
+      "salary": {
+        "@type": "MonetaryAmount",
+        "currency": "USD",
+        "maxValue": 5000,
+        "minValue": 3000
+      },
+      "category": "Python",
+      "direct_apply": true,
+      "apply_form_fields": [
+        {
+          "tag": "input",
+          "type": "hidden",
+          "name": "anon_apply",
+          "required": false
+        },
+        {
+          "tag": "textarea",
+          "type": null,
+          "name": "message",
+          "required": false
+        },
+        {
+          "tag": "input",
+          "type": "email",
+          "name": "email",
+          "required": true
+        },
+        {
+          "tag": "input",
+          "type": "text",
+          "name": "name",
+          "required": false
+        },
+        {
+          "tag": "input",
+          "type": "hidden",
+          "name": "csrfmiddlewaretoken",
+          "required": false
+        }
+      ],
+      "jsonld_keys": [
+        "@context",
+        "@type",
+        "applicantLocationRequirements",
+        "category",
+        "datePosted",
+        "description",
+        "directApply",
+        "employmentType",
+        "estimatedSalary",
+        "experienceRequirements",
+        "hiringOrganization",
+        "identifier",
+        "industry",
+        "jobLocationType",
+        "title",
+        "url",
+        "validThrough"
+      ],
+      "url": "https://djinni.co/jobs/833335-senior-python-backend-engineer/"
+    },
+    {
+      "title": "Full-Stack (Python+React) Engineer",
+      "company": "Temy",
+      "date_posted": "2026-10-16T17:10:10.686534",
+      "valid_through": "2026-11-15T17:10:10.686534",
+      "employment_type": "FULL_TIME",
+      "location_type": "TELECOMMUTE",
+      "applicant_location": {
+        "@type": "AdministrativeArea",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": null,
+          "addressLocality": null,
+          "addressRegion": "Europe",
+          "postalCode": null
+        }
+      },
+      "experience_months": 60.0,
+      "salary": {
+        "@type": "MonetaryAmount",
+        "currency": "USD",
+        "maxValue": 5000,
+        "minValue": 3000
+      },
+      "category": "Python",
+      "direct_apply": true,
+      "apply_form_fields": [
+        {
+          "tag": "input",
+          "type": "hidden",
+          "name": "anon_apply",
+          "required": false
+        },
+        {
+          "tag": "textarea",
+          "type": null,
+          "name": "message",
+          "required": false
+        },
+        {
+          "tag": "input",
+          "type": "email",
+          "name": "email",
+          "required": true
+        },
+        {
+          "tag": "input",
+          "type": "text",
+          "name": "name",
+          "required": false
+        },
+        {
+          "tag": "input",
+          "type": "hidden",
+          "name": "csrfmiddlewaretoken",
+          "required": false
+        }
+      ],
+      "jsonld_keys": [
+        "@context",
+        "@type",
+        "applicantLocationRequirements",
+        "category",
+        "datePosted",
+        "description",
+        "directApply",
+        "employmentType",
+        "estimatedSalary",
+        "experienceRequirements",
+        "hiringOrganization",
+        "identifier",
+        "industry",
+        "jobLocationType",
+        "title",
+        "url",
+        "validThrough"
+      ],
+      "url": "https://djinni.co/jobs/853791-full-stack-python-react-engineer/"
+    },
+    {
+      "title": "Staff Backend Engineer (Python) / LUN App",
+      "company": "ЛУН",
+      "date_posted": "2026-10-16T16:30:18.186884",
+      "valid_through": "2026-11-15T16:30:18.186884",
+      "employment_type": "FULL_TIME",
+      "location_type": "TELECOMMUTE",
+      "applicant_location": {
+        "@type": "AdministrativeArea",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": null,
+          "addressLocality": null,
+          "addressRegion": "Europe",
+          "postalCode": null
+        }
+      },
+      "experience_months": 108.0,
+      "salary": {
+        "@type": "MonetaryAmount",
+        "currency": "USD",
+        "maxValue": 5000,
+        "minValue": 3000
+      },
+      "category": "Python",
+      "direct_apply": true,
+      "apply_form_fields": [
+        {
+          "tag": "input",
+          "type": "hidden",
+          "name": "anon_apply",
+          "required": false
+        },
+        {
+          "tag": "textarea",
+          "type": null,
+          "name": "message",
+          "required": false
+        },
+        {
+          "tag": "input",
+          "type": "email",
+          "name": "email",
+          "required": true
+        },
+        {
+          "tag": "input",
+          "type": "text",
+          "name": "name",
+          "required": false
+        },
+        {
+          "tag": "input",
+          "type": "hidden",
+          "name": "csrfmiddlewaretoken",
+          "required": false
+        }
+      ],
+      "jsonld_keys": [
+        "@context",
+        "@type",
+        "applicantLocationRequirements",
+        "category",
+        "datePosted",
+        "description",
+        "directApply",
+        "employmentType",
+        "estimatedSalary",
+        "experienceRequirements",
+        "hiringOrganization",
+        "identifier",
+        "industry",
+        "jobLocationType",
+        "title",
+        "url",
+        "validThrough"
+      ],
+      "url": "https://djinni.co/jobs/851382-staff-backend-engineer-python-lun-app/"
+    },
+    {
+      "title": "Middle Python Developer",
+      "company": "Ajax Systems",
+      "date_posted": "2026-10-16T11:40:14.672649",
+      "valid_through": "2026-11-15T11:40:14.672649",
+      "employment_type": "FULL_TIME",
+      "location_type": null,
+      "applicant_location": [
+        {
+          "@type": "AdministrativeArea",
+          "address": {
+            "@type": "PostalAddress",
+            "addressCountry": "UKR"
+          }
+        }
+      ],
+      "experience_months": 24.0,
+      "salary": null,
+      "category": "Python",
+      "direct_apply": true,
+      "apply_form_fields": [
+        {
+          "tag": "input",
+          "type": "hidden",
+          "name": "anon_apply",
+          "required": false
+        },
+        {
+          "tag": "textarea",
+          "type": null,
+          "name": "message",
+          "required": false
+        },
+        {
+          "tag": "input",
+          "type": "email",
+          "name": "email",
+          "required": true
+        },
+        {
+          "tag": "input",
+          "type": "text",
+          "name": "name",
+          "required": false
+        },
+        {
+          "tag": "input",
+          "type": "hidden",
+          "name": "csrfmiddlewaretoken",
+          "required": false
+        }
+      ],
+      "jsonld_keys": [
+        "@context",
+        "@type",
+        "applicantLocationRequirements",
+        "category",
+        "datePosted",
+        "description",
+        "directApply",
+        "employmentType",
+        "experienceRequirements",
+        "hiringOrganization",
+        "identifier",
+        "industry",
+        "jobLocation",
+        "title",
+        "url",
+        "validThrough"
+      ],
+      "url": "https://djinni.co/jobs/853661-middle-python-developer/"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+personal: {first_name: Olena, last_name: Kovalenko, email: olena.kovalenko@example.com, phone: "+380501112233", city: Lviv, country: Ukraine}
+links: {linkedin: "https://linkedin.com/in/olena-kovalenko-example", github: "https://github.com/okovalenko-example"}
+job_preferences: {desired_salary_usd: 3500, notice_period: "2 weeks", work_mode: [remote, hybrid], relocation: false}
+languages: {english: B2, ukrainian: native}
+sensitive: {work_authorization: {Ukraine: true, EU: false}, requires_visa_sponsorship: false}
+answers:
+  why_looking: "I want to work on a product with higher load and grow towards senior backend engineering."

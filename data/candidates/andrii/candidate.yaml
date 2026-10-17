@@ -1,0 +1,6 @@
+personal: {first_name: Andrii, last_name: Melnyk, email: andrii.melnyk@example.com, phone: "+380671112233", city: Kharkiv, country: Ukraine}
+links: {github: "https://github.com/amelnyk-ml-example"}
+job_preferences: {desired_salary_usd: 1200, notice_period: "1 month", work_mode: [remote, hybrid]}
+languages: {english: B1, ukrainian: native}
+sensitive: {work_authorization: {Ukraine: true}, requires_visa_sponsorship: false}
+answers: {}

@@ -1,0 +1,7 @@
+personal: {first_name: Maria, last_name: Shevchenko, email: maria.shevchenko@example.com, phone: "+380931112233", city: Lviv, country: Ukraine}
+links: {linkedin: "https://linkedin.com/in/maria-shevchenko-example", portfolio: "https://maria-shevchenko-example.dev"}
+job_preferences: {desired_salary_usd: 4500, notice_period: "3 weeks", work_mode: [remote], relocation: false}
+languages: {english: B2, ukrainian: native}
+sensitive: {work_authorization: {Ukraine: true, EU: false}, requires_visa_sponsorship: false}
+answers:
+  why_looking: "I want a product company with a strong frontend culture where I can own architecture of a large React app."

@@ -1,0 +1,240 @@
+{
+  "manifest_version": "0.4",
+  "name": "jobs-helper",
+  "display_name": "Jobs Helper: DOU, Djinni, Happy Monday",
+  "version": "__VERSION__",
+  "description": "Пошук вакансій на DOU, Djinni і Happy Monday та відгук із чесно адаптованим CV. Пости в LinkedIn.",
+  "long_description": "Помічник шукає вакансії на DOU, Djinni і Happy Monday, адаптує ваше CV під кожну (лише факти з вашого CV), заповнює форму відгуку у вашому браузері — на самому сайті або на сайті компанії (Greenhouse, Lever, Ashby, PeopleForce, BambooHR тощо) — і відправляє так, як ви обрали для кожного сайту: ви натискаєте «Надіслати» самі, підтверджуєте у вікні або автоматично. Якщо сайт попросить увійти, відкриється вікно входу — пароль бачите тільки ви. Також готує LinkedIn-пост і текст для оновлення профілю.",
+  "author": {
+    "name": "Ihor Ivanyshyn",
+    "url": "https://github.com/xsponenta"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xsponenta/jobs_helper_MCP"
+  },
+  "homepage": "https://github.com/xsponenta/jobs_helper_MCP",
+  "icon": "icon.png",
+  "server": {
+    "type": "uv",
+    "entry_point": "server.py",
+    "mcp_config": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "${__dirname}",
+        "server.py"
+      ],
+      "env": {
+        "JOBS_HOME": "${HOME}/.jobs_helper",
+        "AGENT_ROLE": "manual",
+        "JOBS_APPLY_BACKEND": "browser",
+        "JOBS_CANDIDATE_FIRST_NAME": "${user_config.first_name}",
+        "JOBS_CANDIDATE_LAST_NAME": "${user_config.last_name}",
+        "JOBS_CANDIDATE_EMAIL": "${user_config.email}",
+        "JOBS_CANDIDATE_PHONE": "${user_config.phone}",
+        "JOBS_CANDIDATE_CITY": "${user_config.city}",
+        "JOBS_CANDIDATE_COUNTRY": "${user_config.country}",
+        "JOBS_CANDIDATE_LINKEDIN": "${user_config.linkedin}",
+        "JOBS_CANDIDATE_TELEGRAM": "${user_config.telegram}",
+        "JOBS_CANDIDATE_PORTFOLIO": "${user_config.portfolio}",
+        "JOBS_CANDIDATE_SALARY_USD": "${user_config.salary_usd}",
+        "JOBS_CANDIDATE_NOTICE": "${user_config.notice_period}",
+        "JOBS_CANDIDATE_ENGLISH": "${user_config.english}",
+        "JOBS_CANDIDATE_CV": "${user_config.cv_file}",
+        "JOBS_CANDIDATE_CONSENT": "${user_config.consent}",
+        "JOBS_POLICY_DOU": "${user_config.policy_dou}",
+        "JOBS_POLICY_DJINNI": "${user_config.policy_djinni}",
+        "JOBS_POLICY_HAPPYMONDAY": "${user_config.policy_happymonday}",
+        "JOBS_POLICY_ATS": "${user_config.policy_ats}",
+        "JOBS_POLICY_LINKEDIN": "${user_config.policy_linkedin}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "get_candidate",
+      "description": "Ваш профіль і текст CV"
+    },
+    {
+      "name": "search_jobs",
+      "description": "Пошук відкритих вакансій на DOU, Djinni, Happy Monday"
+    },
+    {
+      "name": "get_job",
+      "description": "Повний опис вакансії і де подається відгук"
+    },
+    {
+      "name": "apply",
+      "description": "Заповнити й надіслати відгук за вашою політикою для сайту"
+    },
+    {
+      "name": "get_profile",
+      "description": "Базовий профіль LinkedIn (якщо підключено API)"
+    },
+    {
+      "name": "publish_post",
+      "description": "Опублікувати пост у LinkedIn"
+    },
+    {
+      "name": "save_profile_update",
+      "description": "Готовий текст для оновлення профілю LinkedIn"
+    }
+  ],
+  "prompts": [
+    {
+      "name": "find_and_apply",
+      "description": "Знайти вакансії й відгукнутися",
+      "arguments": [
+        "request",
+        "max_applications"
+      ],
+      "text": "Candidate request: ${arguments.request}. Apply to at most ${arguments.max_applications} vacancies."
+    }
+  ],
+  "user_config": {
+    "first_name": {
+      "type": "string",
+      "title": "Ім'я",
+      "description": "Як у CV, латиницею або українською",
+      "required": true
+    },
+    "last_name": {
+      "type": "string",
+      "title": "Прізвище",
+      "required": true,
+      "description": "Як у CV"
+    },
+    "email": {
+      "type": "string",
+      "title": "Email",
+      "description": "Для форм відгуку",
+      "required": true
+    },
+    "phone": {
+      "type": "string",
+      "title": "Телефон",
+      "description": "У форматі +380…",
+      "required": false
+    },
+    "city": {
+      "type": "string",
+      "title": "Місто",
+      "required": false,
+      "description": "Для полів «Location» у формах"
+    },
+    "country": {
+      "type": "string",
+      "title": "Країна",
+      "default": "Ukraine",
+      "required": false,
+      "description": "Для полів «Country» у формах"
+    },
+    "linkedin": {
+      "type": "string",
+      "title": "LinkedIn (посилання на профіль)",
+      "description": "Потрібен Djinni для відгуку без входу",
+      "required": false
+    },
+    "telegram": {
+      "type": "string",
+      "title": "Telegram (необов'язково)",
+      "required": false,
+      "description": "Деякі форми просять Telegram"
+    },
+    "portfolio": {
+      "type": "string",
+      "title": "Портфоліо / GitHub (необов'язково)",
+      "required": false,
+      "description": "Посилання для полів «Website / Portfolio»"
+    },
+    "salary_usd": {
+      "type": "number",
+      "title": "Бажана зарплата, USD на місяць",
+      "description": "Підставляється лише у поля з USD",
+      "required": false,
+      "min": 0
+    },
+    "notice_period": {
+      "type": "string",
+      "title": "Коли можете вийти на роботу",
+      "description": "Напр. «2 weeks»",
+      "required": false
+    },
+    "english": {
+      "type": "string",
+      "title": "Рівень англійської",
+      "description": "A2 / B1 / B2 / C1 / C2",
+      "default": "B2",
+      "required": false
+    },
+    "cv_file": {
+      "type": "file",
+      "title": "Ваше CV",
+      "description": "PDF, DOCX, MD або TXT. Єдине джерело фактів для адаптації",
+      "required": true
+    },
+    "consent": {
+      "type": "boolean",
+      "title": "Дозволити ставити галочку згоди на обробку персональних даних у формах",
+      "description": "Інакше помічник щоразу питатиме вас",
+      "default": false,
+      "required": false
+    },
+    "policy_dou": {
+      "type": "string",
+      "title": "Відправка на DOU: manual / confirm / auto",
+      "description": "manual — ви натискаєте «Надіслати» самі (DOU забороняє автоматичні відгуки)",
+      "default": "manual",
+      "required": false
+    },
+    "policy_djinni": {
+      "type": "string",
+      "title": "Відправка на Djinni: manual / confirm / auto",
+      "description": "confirm — помічник заповнює, ви підтверджуєте у вікні",
+      "default": "confirm",
+      "required": false
+    },
+    "policy_happymonday": {
+      "type": "string",
+      "title": "Відправка на Happy Monday: manual / confirm / auto",
+      "default": "confirm",
+      "required": false,
+      "description": "confirm — помічник заповнює, ви підтверджуєте у вікні"
+    },
+    "policy_ats": {
+      "type": "string",
+      "title": "Відправка на сайтах компаній (ATS): manual / confirm / auto",
+      "default": "confirm",
+      "required": false,
+      "description": "Greenhouse, Lever, Ashby, PeopleForce, BambooHR, сайти компаній"
+    },
+    "policy_linkedin": {
+      "type": "string",
+      "title": "Пости в LinkedIn: manual / confirm / auto",
+      "description": "manual — відкривається вікно LinkedIn з готовим текстом",
+      "default": "manual",
+      "required": false
+    }
+  },
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
+    "runtimes": {
+      "python": ">=3.11"
+    }
+  },
+  "keywords": [
+    "jobs",
+    "dou",
+    "djinni",
+    "happymonday",
+    "cv",
+    "linkedin",
+    "ukraine"
+  ]
+}

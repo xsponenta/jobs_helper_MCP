@@ -2,7 +2,18 @@
 
 Пошук вакансій на DOU, Djinni і Happy Monday, адаптація CV та відгук від імені кандидата. Система складається з двох агентів і власного MCP-сервера. План — у `PLAN.md`, огляд і схема архітектури — у `docs/OVERVIEW.md`.
 
-## Встановлення
+## Встановлення для користувачів (без клонування)
+- **Claude Desktop, без технічних знань:** завантаж [jobs-helper.mcpb](https://github.com/xsponenta/jobs_helper_MCP/raw/main/release/jobs-helper.mcpb), відкрий його подвійним кліком і заповни форму (ім'я, контакти, CV, як надсилати відгуки). Python і термінал не потрібні.
+- **Claude Code / термінал:**
+  ```bash
+  uvx --from git+https://github.com/xsponenta/jobs_helper_MCP jobs-helper init --cv ~/CV.pdf
+  claude mcp add jobs-helper -s user -e JOBS_APPLY_BACKEND=browser -- \
+    uvx --from git+https://github.com/xsponenta/jobs_helper_MCP jobs-helper-mcp
+  ```
+
+Покрокова інструкція — [docs/INSTALL.md](docs/INSTALL.md). Дані користувача зберігаються в `~/.jobs_helper/`.
+
+## Встановлення для розробки
 ```bash
 uv sync
 uv run playwright install chromium
@@ -24,8 +35,10 @@ uv run python -m jobs_helper hm-sync --budget 100        # оновити інд
 uv run python -m jobs_helper snapshot --query python --query react --name my_snapshot
 ```
 
-## Підключення до Claude Code / Claude Desktop
+## Підключення до Claude Code / Claude Desktop (з клону)
 **Claude Code:** у корені є `.mcp.json`. Запусти `claude` у папці репозиторію й підтверди сервери `jobs` і `linkedin`.
+
+**Об'єднаний сервер для користувачів:** `jobs-helper-mcp` (`jobs_helper/mcp_all.py`). Це інструменти обох серверів плюс `get_candidate` (профіль і текст CV). Розширення Claude Desktop збирається командою `uv run python scripts/build_mcpb.py` у `release/jobs-helper.mcpb`.
 
 **Claude Desktop:** додай у `claude_desktop_config.json` (шлях до репозиторію — свій):
 ```json
@@ -120,6 +133,9 @@ jobs_helper/
   apply/             заповнення форм: planner, mock- і browser-бекенд, PDF із CV
   linkedin/          OAuth і логіка LinkedIn
   mcp_linkedin/      MCP-сервер `linkedin`
+  mcp_all.py         об'єднаний сервер для Claude Desktop / Code
+packaging/mcpb/      маніфест і іконка розширення Claude Desktop
+release/             зібране розширення jobs-helper.mcpb
   agents/            рантайм, промпти, оркестратор, трейсинг
   policy.py          settings.yaml / candidate.yaml
   tracker.py         трекер заявок

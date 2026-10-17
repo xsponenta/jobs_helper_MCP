@@ -1,0 +1,31 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Apply — Backend Engineer</title></head>
+<body>
+<h1>Backend Engineer</h1>
+<form id="application">
+  <div class="field"><label for="fn">First Name *</label><input id="fn" name="first_name" required></div>
+  <div class="field"><label for="ln">Last Name *</label><input id="ln" name="last_name" required></div>
+  <div class="field"><label for="em">Email *</label><input id="em" name="email" type="email" required></div>
+  <div class="field"><label for="ph">Phone</label><input id="ph" name="phone" type="tel"></div>
+  <div class="field"><label for="cv">Resume/CV *</label><input id="cv" name="resume" type="file" required></div>
+  <div class="field"><label for="cl">Cover Letter</label><textarea id="cl" name="cover_letter"></textarea></div>
+  <div class="field"><label for="li">LinkedIn Profile</label><input id="li" name="linkedin"></div>
+  <div class="field"><label for="co">Country</label>
+    <select id="co" name="country"><option value="">Select…</option><option>Poland</option><option>Ukraine</option><option>Germany</option></select></div>
+  <fieldset><legend>How did you hear about us?</legend>
+    <label><input type="radio" name="source" value="li"> LinkedIn</label>
+    <label><input type="radio" name="source" value="dou"> DOU</label>
+    <label><input type="radio" name="source" value="dj"> Djinni</label>
+  </fieldset>
+  <div class="field"><label for="why">Why do you want to join our team? *</label><textarea id="why" name="why_join" required></textarea></div>
+  <div class="field"><label><input type="checkbox" name="gdpr" required> I agree to the processing of my personal data *</label></div>
+  <button type="submit">Submit application</button>
+</form>
+<script>
+document.getElementById('application').addEventListener('submit', e => {
+  e.preventDefault();
+  const f = e.target;
+  window.__submitted = Object.fromEntries([...new FormData(f)].map(([k, v]) => [k, v instanceof File ? v.name : v]));
+  document.body.innerHTML = '<h2>Thank you for applying!</h2><pre id="data">' + JSON.stringify(window.__submitted) + '</pre>';
+});
+</script>
+</body></html>

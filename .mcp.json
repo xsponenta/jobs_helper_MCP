@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "jobs": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["run", "python", "-m", "jobs_helper.mcp_jobs.server"],
+      "env": {
+        "AGENT_ROLE": "manual",
+        "JOBS_APPLY_BACKEND": "browser"
+      }
+    },
+    "linkedin": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["run", "python", "-m", "jobs_helper.mcp_linkedin.server"],
+      "env": {
+        "AGENT_ROLE": "manual"
+      }
+    }
+  }
+}

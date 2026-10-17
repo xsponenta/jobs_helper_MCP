@@ -1,0 +1,22 @@
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+.DS_Store
+
+# candidate sessions and secrets — never commit
+.browser_profiles/
+.secrets/
+/candidate.yaml
+
+# run artifacts
+runs/
+01_recon/samples/raw/
+
+# per-site submit policy of the candidate
+settings.yaml
+
+# http cache and local data
+.cache/
+
+# candidate applications tracker and documents
+workspace/

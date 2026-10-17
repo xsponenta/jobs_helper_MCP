@@ -58,8 +58,9 @@ header .meta { display: flex; flex-wrap: wrap; gap: 2pt 12pt; color: #4a5562; fo
 header .meta span { white-space: nowrap; }
 h2 { margin: calc(11pt * var(--scale)) 0 4pt; page-break-after: avoid; }
 h3 { font-size: 1.02em; margin: 6pt 0 1pt; }
-p { margin: 2pt 0; } ul { margin: 2pt 0 4pt; padding-left: 14pt; } li { margin: 1.5pt 0; }
-li::marker { color: var(--accent); }
+p { margin: 2pt 0; } ul { margin: 2pt 0 4pt; padding-left: 0; list-style: none; }
+li { margin: 1.5pt 0; padding-left: 11pt; text-indent: -11pt; }
+li .bul { color: var(--accent); display: inline-block; width: 11pt; text-indent: 0; }
 .entry { display: flex; justify-content: space-between; gap: 10pt; margin-top: 6pt; page-break-after: avoid; }
 .entry .role { font-weight: 600; } .entry .dates { color: #5b6673; white-space: nowrap; font-size: .93em; }
 a { color: inherit; text-decoration: none; }
@@ -96,6 +97,7 @@ def cv_html(md_text: str, theme: str = "modern", accent: str = "#1f5fbf", scale:
         title, meta_items = parts[0], parts[1:]
     body = markdown.markdown(_loosen_lists(lines[body_start:]), extensions=["extra", "sane_lists"])
     body = re.sub(r"<p><strong>(.+?)</strong>\s*(?:·|\||—|-)?\s*(.*?)</p>", _entry, body)
+    body = body.replace("<li>", "<li><span class='bul'>•</span>")     # a real bullet character in the text layer
     header = (f"<header><div><h1>{html.escape(name)}</h1>" + (f"<div class='title'>{markdown.markdown(title)[3:-4]}</div>" if title else "")
               + "</div><div class='meta'>" + "".join(f"<span>{markdown.markdown(m)[3:-4]}</span>" for m in meta_items) + "</div></header>")
     css = (BASE_CSS.replace("ACCENT", accent).replace("SCALE", f"{scale:.3f}").replace("FONT", th["font"])) + th["css"]

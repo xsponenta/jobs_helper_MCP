@@ -63,7 +63,8 @@ class BrowserBackend:
         if not start_url:
             return ApplyOutcome("failed", error=_err("external_apply", "No application URL is known.", "Open the vacancy manually."))
         tmp = workspace() / ".tmp" / uuid.uuid4().hex[:10]
-        pdfs = render_pdfs({"cv": req.cv_markdown, "cover_letter": req.cover_letter}, tmp)
+        pdfs = render_pdfs({"cv": req.cv_markdown, "cover_letter": req.cover_letter}, tmp,
+                           role=req.job.title, company=req.job.company)
         if req.original_cv and Path(req.original_cv).suffix.lower() in (".pdf", ".docx", ".doc"):
             pdfs["cv"] = Path(req.original_cv)    # upload the candidate's own designed CV
         headless = self.force_headless if self.force_headless is not None else req.dry_run

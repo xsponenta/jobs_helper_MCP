@@ -115,6 +115,11 @@ class JobsService:
             published = {j.id: j.published_at or "" for j in jobs}
             rows.sort(key=lambda r: published[r["job_id"]], reverse=True)
         rows = rows[:limit]
+        try:
+            from jobs_helper import activity
+            activity.record_found(rows, keywords, self.tracker.root)
+        except Exception:  # noqa: BLE001
+            pass
         out = {"count": len(rows), "data_source": self.provider.name, "sorted_by": sort_by, "jobs": rows}
         if ctx.get("has_cv"):
             out["fit_note"] = ("fit 0-100 compares each vacancy with the candidate's CV (skills, years, English, level); "
@@ -152,6 +157,8 @@ class JobsService:
             if ctx.get("has_cv"):
                 data["fit"] = fit(job, ctx)
             data["warnings"] = vacancy_flags(job)
+            from jobs_helper import activity
+            activity.record_opened(job, data.get("fit"), data["warnings"], self.tracker.root)
         except Exception:  # noqa: BLE001
             pass
         if not data["is_open"]:
@@ -245,12 +252,16 @@ class JobsService:
                          status="prepared" if outcome.status == "prepared" else outcome.status,
                          policy="dry_run" if dry else policy, cv_path=cv_path, cover_path=cover_path,
                          screenshot=outcome.screenshot or "", submitted_by=self.role, answers=answers or {})
+        files = self._archive(app_id, outcome, cv_path, cover_path)
         if outcome.status != "failed":
             try:
                 from jobs_helper import pipeline
+                from jobs_helper.insights.fit import fit
+                ctx = self._fit_context()
                 pipeline.on_apply(app_id, {"job_id": job.id, "company": job.company or "", "title": job.title, "url": job.url,
                                            "source": job.source, "target": target, "policy": "dry_run" if dry else policy,
-                                           "cv_variant": "original_file" if original else f"generated:{pol.cv_settings()['template']}"},
+                                           "cv_variant": "original_file" if original else f"generated:{pol.cv_settings()['template']}",
+                                           "fit": fit(job, ctx)["score"] if ctx.get("has_cv") else None, "files": files},
                                   outcome.status, self.tracker.root)
             except Exception:  # noqa: BLE001 — the tracker row is already written
                 pass
@@ -264,6 +275,23 @@ class JobsService:
                 "message": outcome.message, **outcome.extra}
 
     # ------------------------------------------------------------ helpers
+    def _archive(self, app_id: str, outcome, cv_path: str, cover_path: str) -> dict[str, str]:
+        """Keeps exactly what was sent (PDFs uploaded to the form, the screenshot) next to the application's texts."""
+        import shutil
+        folder = self.tracker.docs_dir / app_id
+        files = {"cv_text": str(self.tracker.root / cv_path), "cover_letter_text": str(self.tracker.root / cover_path)}
+        sources = dict(getattr(outcome, "documents", {}) or {})
+        if outcome.screenshot:
+            sources["screenshot"] = outcome.screenshot
+        for kind, src in sources.items():
+            try:
+                p = Path(src)
+                if p.exists():
+                    files[kind] = str(shutil.copy(p, folder / p.name))
+            except OSError:
+                pass
+        return files
+
     def _is_open(self, job: Job) -> bool:
         if not job.valid_through:
             return True

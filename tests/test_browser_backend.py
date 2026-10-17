@@ -57,6 +57,8 @@ def test_auto_submits_and_detects_confirmation():
     prof = PROFILE | {"answers": {"consent_to_processing": True}}
     out = backend().apply(req("ats_form.html", policy="auto", answers={"why_join": "Your product matches my Django experience."}, profile=prof))
     assert out.status == "submitted", out
+    assert out.documents["cv"].endswith("_CV.pdf") and Path(out.documents["cover_letter"]).exists()   # reported for the archive
+
 
 
 def test_captcha_blocks_auto():

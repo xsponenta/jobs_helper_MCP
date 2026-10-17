@@ -35,6 +35,8 @@ Search: search_jobs(sort_by="fit") ranks by fit with the CV; get_job adds fit an
 high-risk warnings before applying. saved_search keeps standing queries and shows only new vacancies.
 Research: company_insights (DOU rating, employee-review themes, spheres), salary_insights (DOU salary survey),
 market_skill_gap (what the market asks for a role vs the CV, learning plan).
+Tables: job_search_tables (applications, vacancies seen, CV history, weekly activity) shown as markdown tables;
+open_dashboard for the full local page; cv_history to show / compare / restore CV versions.
 After applying: pipeline_report (stages, funnel, follow-ups due); update_application when the candidate reports news
 (also for applications made elsewhere). Interviews: interview_prep(job_id), then the mock_interview prompt.
 CV quality: review_cv scores the CV like recruiters and ATS screen it (knock-outs for a vacancy, 6-second scan, ATS parse,
@@ -248,9 +250,12 @@ def render_cv(
         if res.get("does_not_fit"):
             result["does_not_fit"] = res["does_not_fit"]
         if make_default:
+            from jobs_helper import cv_history
+            cv_history.ensure_baseline()
             pol.master_cv_path().write_text(cv_markdown.strip() + "\n", encoding="utf-8")
             pol.set_cv_settings(template=template, accent=accent or st["accent"], max_pages=max_pages)
-            result["default"] = "Saved: this CV text and design are now used for all applications."
+            v = cv_history.record(cv_markdown, "made default (render_cv)", "render_cv", template, res["path"], q["overall"], q["level"])
+            result["default"] = f"Saved as CV version v{v['version']}: this CV text and design are now used for all applications."
         return [result, Image(path=res["preview"])]
     except Exception as e:  # noqa: BLE001
         return [{"error": "internal_error", "message": f"{type(e).__name__}: {e}", "hint": "Check the markdown.", "retryable": False}]
@@ -301,9 +306,12 @@ def create_cv(
         if res.get("does_not_fit"):
             result["does_not_fit"] = res["does_not_fit"]
         if make_default:
+            from jobs_helper import cv_history
+            cv_history.ensure_baseline()
             pol.master_cv_path().write_text(md, encoding="utf-8")
             pol.set_cv_settings(template=template, accent=accent or st["accent"], max_pages=max_pages)
-            result["default"] = "Saved as the candidate's default CV."
+            v = cv_history.record(md, "created (create_cv)", "create_cv", template, res["path"], q["overall"], q["level"])
+            result["default"] = f"Saved as the candidate's default CV (version v{v['version']})."
         else:
             result["next"] = ("Show the preview and the action plan. Improve with the candidate's real facts, then call again with "
                               "make_default=true and facts_confirmed_by_candidate=true once they approve.")
@@ -334,8 +342,10 @@ def read_vacancy(
     out: dict[str, Any] = {"job_id": job.id, "vacancy": job.short() | {"description": job.description[:3000]},
                            "apply_target": apply_target(job)}
     try:
+        from jobs_helper import activity
         from jobs_helper.insights.redflags import vacancy_flags
         out["warnings"] = vacancy_flags(job)
+        activity.record_opened(job, None, out["warnings"])
     except Exception:  # noqa: BLE001
         pass
     profile = pol.load_candidate() or {}

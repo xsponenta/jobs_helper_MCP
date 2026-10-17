@@ -30,6 +30,7 @@ class ApplyOutcome:
     message: str = ""
     error: dict | None = None   # structured error for the agent (code/message/hint/retryable)
     extra: dict = field(default_factory=dict)   # e.g. url / page_excerpt / confirmed after submit, value adjustments
+    documents: dict[str, str] = field(default_factory=dict)   # files uploaded to the form: {'cv': path, 'cover_letter': path}
 
 
 class ApplyBackend(Protocol):

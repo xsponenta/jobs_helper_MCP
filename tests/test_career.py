@@ -131,7 +131,7 @@ def test_apply_creates_pipeline_entry(env):
         res = svc.apply(job.id, answers={q["field_id"]: "3000" for q in res["questions"]})
     assert res.get("ok"), res
     entry = pipeline.load(env / "ws")[res["application_id"]]
-    assert entry["job_id"] == job.id and entry["cv_variant"].startswith("generated:") and entry["cv_base"] == "file:cv.md"
+    assert entry["job_id"] == job.id and entry["cv_variant"].startswith("generated:") and entry["cv_base"] == "v0" and Path(entry["files"]["cv_text"]).exists()
 
 
 def test_search_fit_and_saved_search(env, monkeypatch):
@@ -208,3 +208,65 @@ def test_interview_prep_and_market():
     assert gaps["aws"]["priority"] == "high" and gaps["kubernetes"]["you_have_related"] == ["docker"]
     assert "python" in m["your_strengths"] and m["learning_plan"][0]["skill"] in ("aws", "kubernetes")
     assert analyze([], CV)["vacancies_analyzed"] == 0
+
+
+# ---------------------------------------------------------------- tables, CV history, dashboard
+
+def test_cv_history_versions(env):
+    from jobs_helper import cv_history, policy as pol
+    assert cv_history.ensure_baseline()[0]["version"] == 0 and cv_history.current_version() == 0
+    v1 = cv_history.record(CV.replace("40k", "45k"), "made default (render_cv)", "render_cv", "classic")
+    pol.master_cv_path().write_text(CV.replace("40k", "45k"), encoding="utf-8")
+    assert v1["version"] == 1 and cv_history.current_version() == 1
+    assert cv_history.record(CV.replace("40k", "45k"), "again", "render_cv")["version"] == 1      # same text: no new version
+    cv_history.record(CV + "\n- Mentored 2 juniors in Kafka", "x", "create_cv")
+    diff = cv_history.compare(1, 2)
+    assert "kafka" in diff["technologies_added"] and any("Mentored" in x for x in diff["lines_added"])
+    res = cv_history.restore(1)
+    assert res["recorded_as"] == 3 and "45k" in pol.master_cv_path().read_text(encoding="utf-8")
+    assert cv_history.restore(0)["restored"] == 0 and not pol.master_cv_path().exists() and cv_history.current_version() == 0
+
+
+class _FileBackend:
+    """Like the browser backend: reports the PDFs it uploaded and a screenshot."""
+    def __init__(self, tmp):
+        self.tmp = tmp
+
+    def apply(self, req):
+        from jobs_helper.apply.backend import ApplyOutcome
+        self.tmp.mkdir(exist_ok=True)
+        for name in ("Olena_Kovalenko_CV.pdf", "Olena_Kovalenko_Cover_Letter.pdf", "submitted.png"):
+            (self.tmp / name).write_bytes(b"x")
+        return ApplyOutcome("submitted", screenshot=str(self.tmp / "submitted.png"),
+                            documents={"cv": str(self.tmp / "Olena_Kovalenko_CV.pdf"),
+                                       "cover_letter": str(self.tmp / "Olena_Kovalenko_Cover_Letter.pdf")})
+
+
+def test_tables_archive_and_dashboard(env):
+    from jobs_helper import activity, dashboard
+    from jobs_helper.ats import apply_target
+    from jobs_helper.mcp_jobs.service import JobsService, SnapshotProvider
+    from jobs_helper.tracker import Tracker
+    snap = Path(__file__).resolve().parent.parent / "data" / "snapshots" / "2026-10-17_eval.json"
+    ws = env / "ws"
+    svc = JobsService(provider=SnapshotProvider(snap), backend=_FileBackend(env / "tmpdocs"), tracker=Tracker(ws), role="reviewer")
+    found = svc.search_jobs("python", limit=5)
+    job = next(j for j in svc.provider.store.jobs.values() if apply_target(j) == "djinni")
+    svc.get_job(job.id)
+    res = svc.apply(job.id, CV + "\n" + "- more detail line\n" * 20, "Dear team, " + "I build Django APIs with PostgreSQL. " * 8)
+    assert res["status"] == "submitted"
+    pipeline.update(company="Evil </script><b>Co", title="QA", source="linkedin", root=ws)
+
+    apps = activity.applications(root=ws)
+    sent = next(a for a in apps if a["application_id"] == res["application_id"])
+    assert {"cv", "cover_letter", "screenshot", "cv_text"} <= set(sent["files"])
+    assert all(Path(p).exists() and str(ws) in p for p in sent["files"].values())        # copies kept with the application
+    assert sent["cv_version"] == "v0" and sent["status_ua"] == "надіслано"
+    vac = activity.vacancies(root=ws)
+    assert len(vac) >= found["count"] and next(v for v in vac if v["job_id"] == job.id)["applied"] == res["application_id"]
+    assert any(v["opened"] for v in vac)
+    week = activity.weekly(root=ws)[-1]
+    assert week["week_of"] == "2026-10-12" and week["applied"] == 2 and week["found"] >= found["count"]
+
+    html = dashboard.build(root=ws, out=env / "dashboard.html").read_text(encoding="utf-8")
+    assert "Мій пошук роботи" in html and "Evil <\\/script>" in html and "</script><b>" not in html

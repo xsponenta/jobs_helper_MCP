@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import os
 import re
+import threading
 import uuid
 from difflib import SequenceMatcher
 from pathlib import Path
@@ -56,9 +57,16 @@ class BrowserBackend:
         env = os.environ.get("JOBS_HEADLESS")
         self.force_headless = headless if headless is not None else (env.lower() in ("1", "true", "yes") if env else None)
         self.human_timeout = int(os.environ.get("JOBS_HUMAN_TIMEOUT", "900")) * 1000
+        self._local = threading.local()
 
     # ------------------------------------------------------------ entry point
     def apply(self, req: ApplyRequest) -> ApplyOutcome:
+        self._local.docs = {}
+        out = self._apply(req)
+        out.documents = {k: str(v) for k, v in self._local.docs.items()}
+        return out
+
+    def _apply(self, req: ApplyRequest) -> ApplyOutcome:
         start_url = req.job.apply_url if req.target.startswith("ats:") or req.target == "company_site" else req.job.url
         if not start_url:
             return ApplyOutcome("failed", error=_err("external_apply", "No application URL is known.", "Open the vacancy manually."))
@@ -67,6 +75,7 @@ class BrowserBackend:
                            role=req.job.title, company=req.job.company)
         if req.original_cv and Path(req.original_cv).suffix.lower() in (".pdf", ".docx", ".doc"):
             pdfs["cv"] = Path(req.original_cv)    # upload the candidate's own designed CV
+        self._local.docs = pdfs
         headless = self.force_headless if self.force_headless is not None else req.dry_run
         profile = PROFILES_DIR / (req.target if req.target in ("dou", "djinni", "happymonday") else "ats")
         with sync_playwright() as p:

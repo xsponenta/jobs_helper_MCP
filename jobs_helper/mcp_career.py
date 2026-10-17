@@ -270,7 +270,116 @@ def market_skill_gap(
     return _guard(run)
 
 
-TOOLS = (update_application, pipeline_report, saved_search, salary_insights, company_insights, interview_prep, market_skill_gap)
+# ---------------------------------------------------------------- tables, CV history, dashboard
+
+_COLUMNS = {
+    "applications": ["application_id", "date", "company", "title", "source", "sent_how", "status_ua", "fit", "cv_version", "next_step", "files"],
+    "vacancies": ["last_seen", "company", "title", "source", "salary", "fit", "risk", "opened", "applied", "status"],
+    "cv_history": ["version", "date", "reason", "score", "level", "template", "words", "used_in", "current"],
+    "activity": ["week_of", "found", "opened", "applied", "responses", "interviews", "offers", "rejections", "applied_by_source"],
+}
+
+
+def job_search_tables(
+    table: Annotated[Literal["applications", "vacancies", "cv_history", "activity"],
+                     Field(description="applications: when and where the candidate applied through the assistant (+ logged manually); "
+                                       "vacancies: what the assistant found / opened, with fit and red flags; cv_history: versions of "
+                                       "the main CV; activity: per-week counts")],
+    days: Annotated[int | None, Field(description="Only the last N days (applications / vacancies)")] = None,
+    source: Annotated[str | None, Field(description="applications: only this board, e.g. 'djinni'")] = None,
+    status: Annotated[str | None, Field(description="applications: only this stage, e.g. 'interview'")] = None,
+    only_opened: Annotated[bool, Field(description="vacancies: only ones opened in full, not just seen in search")] = False,
+    min_fit: Annotated[int | None, Field(description="vacancies: only fit >= this")] = None,
+    limit: Annotated[int, Field(description="Max rows, 1..100")] = 30,
+) -> dict[str, Any]:
+    """TABLES of the candidate's job search, ready to show in chat as a markdown table (use the column order given).
+    For a full interactive view with filters and links to the sent files, use open_dashboard."""
+    from jobs_helper import activity, dashboard
+
+    def run():
+        n = max(1, min(limit, 100))
+        if table == "applications":
+            rows = activity.applications(days, source, status)
+            for r in rows:
+                r["files"] = ", ".join(sorted(r.get("files") or {}))
+        elif table == "vacancies":
+            rows = activity.vacancies(days, only_opened, min_fit)
+        elif table == "cv_history":
+            rows = dashboard.collect()["cv"]
+        else:
+            rows = activity.weekly()[::-1]
+        cols = _COLUMNS[table]
+        out = {"table": table, "total": len(rows), "columns": cols, "rows": [{c: r.get(c) for c in cols} for r in rows[:n]]}
+        if not rows:
+            out["hint"] = {"applications": "No applications yet.", "vacancies": "No vacancies logged yet: search first.",
+                           "cv_history": "No CV versions yet: they appear when an improved CV is made default.",
+                           "activity": ""}[table]
+        else:
+            out["hint"] = "Show as a markdown table with short Ukrainian column titles; offer open_dashboard for the full view."
+        return out
+    return _guard(run)
+
+
+def cv_history(
+    action: Annotated[Literal["list", "show", "compare", "restore"], Field(description="list versions; show one version's text; compare two; restore an older one as the main CV")],
+    version: Annotated[int | None, Field(description="Version number (v0 = the original file)")] = None,
+    other_version: Annotated[int | None, Field(description="compare: the second version (default: the one before `version`)")] = None,
+) -> dict[str, Any]:
+    """HISTORY of the candidate's main CV: every version that became the default, with date, reason, score, level,
+    design and how many applications used it; show a version, compare two (score, technologies and lines added /
+    removed), or restore an older version (state-changing; nothing is lost — the restore becomes a new version)."""
+    from jobs_helper import cv_history as hist
+    from jobs_helper import dashboard
+
+    def run():
+        if action == "list":
+            items = dashboard.collect()["cv"]
+            return {"versions": items, "current": hist.current_version()} if items else \
+                {"versions": [], "hint": "No CV yet: add one in the settings or create it with create_cv."}
+        if version is None:
+            return err("invalid_argument", f"{action} needs version.", "Use action='list' to see version numbers.", True)
+        e = hist.get(version)
+        if not e:
+            return err("not_found", f"No CV version v{version}.", "Use action='list'.")
+        if action == "show":
+            return {"version": version, **{k: e.get(k) for k in ("created_at", "reason", "score", "level", "template", "pdf")},
+                    "text": hist.text_of(e)[:12000]}
+        if action == "compare":
+            other = other_version if other_version is not None else max(version - 1, 0)
+            try:
+                return hist.compare(other, version)
+            except KeyError as x:
+                return err("not_found", f"No CV version v{x.args[0]}.", "Use action='list'.")
+        res = hist.restore(version)
+        return {"ok": True, **res, "message": f"Version v{version} is the main CV again; it will be used for new applications."}
+    return _guard(run)
+
+
+def open_dashboard(
+    open_in_browser: Annotated[bool, Field(description="Open the page in the default browser")] = True,
+) -> dict[str, Any]:
+    """OPEN the candidate's job-search dashboard: a local page with tabs Applications (date, company, vacancy, board,
+    status, fit, CV version, links to the exact CV / letter PDFs and screenshot that were sent), Vacancies (found /
+    opened, fit, red flags, applied or not), CV history and Activity per week, with filters and sorting. The file is
+    rebuilt on every call and stays on the candidate's computer."""
+    from jobs_helper import dashboard
+
+    def run():
+        path = dashboard.build()
+        opened = False
+        if open_in_browser:
+            import webbrowser
+            try:
+                opened = webbrowser.open(path.resolve().as_uri())
+            except Exception:  # noqa: BLE001
+                opened = False
+        return {"ok": True, "path": str(path), "opened": opened,
+                "hint": "Tell the candidate the page is open" if opened else f"Ask the candidate to open {path} in a browser"}
+    return _guard(run)
+
+
+TOOLS = (update_application, pipeline_report, saved_search, salary_insights, company_insights, interview_prep, market_skill_gap,
+         job_search_tables, cv_history, open_dashboard)
 
 
 def mock_interview(job_id: str, kind: str = "mixed") -> str:

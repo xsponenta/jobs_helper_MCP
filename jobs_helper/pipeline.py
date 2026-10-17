@@ -46,7 +46,9 @@ def load(root: Path | None = None) -> dict[str, dict]:
 
 
 def save(data: dict[str, dict], root: Path | None = None) -> None:
-    _path(root).write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+    path = _path(root)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
 
 
 def _entry(app_id: str, info: dict, stage: str, at: str | None = None) -> dict:
@@ -55,11 +57,19 @@ def _entry(app_id: str, info: dict, stage: str, at: str | None = None) -> dict:
             "title": info.get("title", ""), "url": info.get("url", ""), "source": info.get("source", "") or "other",
             "target": info.get("target", ""), "policy": info.get("policy", ""), "cv_variant": info.get("cv_variant", ""),
             "cv_base": info.get("cv_base", ""), "stage": stage, "furthest": stage, "created_at": at, "updated_at": at,
+            "fit": info.get("fit"), "files": info.get("files") or {},
             "history": [{"stage": stage, "at": at}], "notes": [], "contacts": [], "next_step": None, "next_step_date": None}
 
 
 def cv_base_version() -> str:
-    """Short fingerprint of the base CV used at the time (master CV, else the original file name)."""
+    """Which version of the main CV is in use (see cv_history): 'v0' is the original file."""
+    try:
+        from jobs_helper import cv_history
+        v = cv_history.current_version()
+        if v is not None:
+            return f"v{v}"
+    except Exception:  # noqa: BLE001 — fall back to a fingerprint
+        pass
     if pol.master_cv_path().exists():
         return "master:" + hashlib.sha1(pol.master_cv_path().read_bytes()).hexdigest()[:6]
     f = pol.cv_file(pol.load_candidate())

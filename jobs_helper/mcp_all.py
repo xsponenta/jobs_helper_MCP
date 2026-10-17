@@ -8,6 +8,7 @@ Run:  jobs-helper-mcp            (installed)   |   uv run python -m jobs_helper.
 
 from __future__ import annotations
 
+import re
 from typing import Annotated, Any, Literal
 
 from mcp.server.mcpserver import MCPServer
@@ -26,6 +27,9 @@ plus company career sites / ATS, plus the candidate's LinkedIn).
 
 Workflow: get_candidate first (profile, CV, other documents, remembered facts) -> search_jobs -> get_job for each
 shortlisted vacancy -> tailor the CV and write a cover letter -> apply.
+LinkedIn: read_vacancy reads a LinkedIn job link the candidate pastes (Easy Apply stays with the candidate);
+import_linkedin_profile turns their LinkedIn PDF / data archive into a CV draft; save_profile_update prepares profile
+texts from the CV and, after approval, opens a copy-helper (no automatic changes on LinkedIn).
 CV quality: review_cv scores the CV like recruiters and ATS screen it (knock-outs for a vacancy, 6-second scan, ATS parse,
 content, measured design; levels Bronze → Platinum with points per fix) and shows its first page. Fix content with the
 candidate's facts; fix weak design / ATS problems with render_cv; no CV at all → create_cv (interview prompt
@@ -299,6 +303,126 @@ def create_cv(
         return [result, Image(path=res["preview"])]
     except Exception as e:  # noqa: BLE001
         return [{"error": "internal_error", "message": f"{type(e).__name__}: {e}", "hint": "Check the input.", "retryable": False}]
+
+
+@mcp.tool()
+def read_vacancy(
+    url: Annotated[str | None, Field(description="Link to a vacancy: LinkedIn job, Work.ua, a company career page, an ATS page")] = None,
+    text: Annotated[str | None, Field(description="Or the vacancy text pasted by the candidate")] = None,
+    title: Annotated[str | None, Field(description="Vacancy title when only text is given (optional)")] = None,
+    company: Annotated[str | None, Field(description="Company when only text is given (optional)")] = None,
+) -> dict[str, Any]:
+    """READ a vacancy the candidate found themselves (LinkedIn link, any job site or pasted text) and check the current CV
+    against it: knock-out filters (years, English, keywords), coverage, what is missing. Returns a job_id usable with
+    get_job, review_cv and apply. LinkedIn: only the link the candidate gave is opened; applying on LinkedIn (Easy Apply)
+    stays with the candidate."""
+    from jobs_helper.ats import apply_target
+    from jobs_helper.cv.review import review
+    from jobs_helper.sources.base import SourceError
+    from jobs_helper.sources.external import read_vacancy as _read
+    try:
+        job = _read(url=url, text=text, title=title, company=company)
+    except SourceError as e:
+        return {"error": e.code, "message": e.message, "hint": e.hint, "retryable": e.code in ("source_unavailable", "invalid_argument")}
+    out: dict[str, Any] = {"job_id": job.id, "vacancy": job.short() | {"description": job.description[:3000]},
+                           "apply_target": apply_target(job)}
+    profile = pol.load_candidate() or {}
+    cv_text = (pol.master_cv_path().read_text(encoding="utf-8") if pol.master_cv_path().exists()
+               else (pol.read_cv_text(f) if (f := pol.cv_file(profile)) else ""))
+    if cv_text:
+        r = review(cv_text, None, f"{job.title}\n{job.description}", {"title": job.title, "experience_years": job.experience_years})
+        m = r["details"].get("match", {})
+        out["cv_fit"] = {"score_for_this_vacancy": r["overall"], "level": r["level"], "knockouts": r["knockouts"],
+                         "keywords_covered": m.get("covered"), "keywords_missing": m.get("missing"),
+                         "top_fixes": [a["fix"] for a in r["action_plan"] if a["category"] in ("match", "first_impression")][:4]}
+    out["next_steps"] = ("Propose a CV for this vacancy: reorder and rephrase the candidate's real experience toward its "
+                         "requirements (never add missing skills), check it with review_cv(job_id, cv_markdown), show the preview "
+                         "with render_cv, then apply(job_id). " + ("For LinkedIn Easy Apply hand the PDF and the link to the candidate."
+                                                                   if out["apply_target"] == "not_a_form:linkedin" else ""))
+    return out
+
+
+@mcp.tool(structured_output=False)
+def import_linkedin_profile(
+    path: Annotated[str | None, Field(description="LinkedIn 'Save to PDF' file or the data archive (.zip / folder). Omit to look among the candidate's documents")] = None,
+    build_cv: Annotated[bool, Field(description="Also build a draft CV from the profile and return its preview")] = True,
+    template: Annotated[Literal["modern", "classic", "compact"], Field(description="Design of the draft CV")] = "modern",
+) -> list[Any]:
+    """IMPORT the candidate's LinkedIn profile from a file LinkedIn lets them download (profile → More → Save to PDF, or
+    Settings → Data privacy → Get a copy of your data) and turn it into a CV draft. The profile is kept as one of the
+    candidate's fact sources. The draft is NOT made default — show it, fix with the candidate, then create_cv(make_default)."""
+    import shutil
+    from jobs_helper.cv.builder import build_markdown
+    from jobs_helper.cv.naming import cv_filename
+    from jobs_helper.cv.render import render_cv as _render
+    from jobs_helper.cv.review import review
+    from jobs_helper.linkedin.profile_import import import_profile, to_cv_args
+    from mcp.server.mcpserver import Image
+    try:
+        profile = pol.load_candidate() or {}
+        src = Path(path).expanduser() if path else next(
+            (f for f in pol.candidate_files(profile) if re.search(r"linkedin|profile", f.name, re.I)), None)
+        if src is None or not src.exists():
+            return [{"error": "file_missing", "message": "No LinkedIn profile file found.",
+                     "hint": "Ask the candidate to open their LinkedIn profile → More → Save to PDF (or download the data archive) "
+                             "and add the file in the extension settings or give its path.", "retryable": True}]
+        data = import_profile(src)
+        docs = config.HOME / "documents"
+        docs.mkdir(parents=True, exist_ok=True)
+        if src.suffix.lower() == ".pdf" and docs not in src.parents:
+            shutil.copy(src, docs / "linkedin_profile.pdf")
+        complete = bool(data.get("full_name") and data.get("positions"))
+        out: dict[str, Any] = {"profile": {k: v for k, v in data.items() if k != "raw_text"}, "parsed_completely": complete}
+        if not complete and data.get("raw_text"):
+            out["raw_text"] = data["raw_text"][:6000]
+            out["hint"] = "The PDF layout was not fully recognised: structure the facts from raw_text yourself and call create_cv."
+        if build_cv and complete:
+            args = to_cv_args(data)
+            personal = profile.get("personal") or {}
+            if personal.get("email") and "example.com" in args["contacts"].email:
+                args["contacts"].email = personal["email"]
+            if personal.get("phone") and not args["contacts"].phone:
+                args["contacts"].phone = personal["phone"]
+            md = build_markdown(**args)
+            out_dir = config.HOME / "generated"
+            out_dir.mkdir(parents=True, exist_ok=True)
+            fname = cv_filename(args["full_name"], args["title"], directory=out_dir, extra="LinkedIn")
+            st = pol.cv_settings()
+            res = _render(md, out_dir / fname, theme=template, accent=st["accent"], max_pages=2,
+                          preview_png=out_dir / fname.replace(".pdf", ".png"))
+            q = review(md, design_pdf=Path(res["path"]))
+            out.update(cv_markdown=md, path=res["path"], score=q["overall"], level=q["level"], action_plan=q["action_plan"][:6],
+                       next="LinkedIn descriptions are often thin: ask the candidate for numbers / results, then create_cv "
+                            "(make_default=true, facts_confirmed_by_candidate=true) when they approve.")
+            return [out, Image(path=res["preview"])]
+        return [out]
+    except Exception as e:  # noqa: BLE001
+        return [{"error": "internal_error", "message": f"{type(e).__name__}: {e}", "hint": "Check the file.", "retryable": False}]
+
+
+@mcp.prompt(title="CV for a vacancy", description="Read a vacancy (LinkedIn or any link / text) and propose a tailored CV")
+def tailor_cv_for_vacancy(vacancy: str) -> str:
+    return (
+        f"Vacancy (link or text): {vacancy}\n\n"
+        "1. read_vacancy with the link (or the text). Tell the candidate the fit: knock-outs first, then missing keywords.\n"
+        "2. get_candidate. Write a CV for this vacancy from the candidate's REAL facts only: title close to the vacancy wording "
+        "if truthful, summary that opens with years and the 3-5 skills the vacancy wants, most relevant bullets first.\n"
+        "3. review_cv(job_id, cv_markdown) — iterate until no fix depends on facts you do not have; ask the candidate for those.\n"
+        "4. render_cv to show the design; on approval apply(job_id) — or, for LinkedIn Easy Apply, give the candidate the PDF."
+    )
+
+
+@mcp.prompt(title="Update LinkedIn from my CV", description="Prepare LinkedIn headline / about / skills / experience from the CV, with approval")
+def linkedin_profile_from_cv(focus: str = "") -> str:
+    return (
+        f"Goal: update the candidate's LinkedIn profile from their CV. Focus / target role: {focus or '(as in the CV)'}\n\n"
+        "1. get_candidate (CV + remembered facts are the only source).\n"
+        "2. Draft: headline ≤ 220 chars (role · specialisation · 2-3 key skills), About 3 short paragraphs in first person "
+        "(who you are, top results with numbers, what you look for), 20-30 skills, and a description for every position.\n"
+        "3. save_profile_update(..., approved_by_candidate=false) and show the draft; fix anything the candidate changes.\n"
+        "4. Only after an explicit 'yes': save_profile_update(..., approved_by_candidate=true) — a copy-helper opens next to the "
+        "profile and the candidate pastes each block. Nothing is changed on LinkedIn automatically."
+    )
 
 
 @mcp.prompt(title="Create a CV from scratch", description="Short interview, then a professional, ATS-friendly CV")

@@ -7,12 +7,12 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-SourceName = Literal["dou", "djinni", "happymonday"]
+SourceName = Literal["dou", "djinni", "happymonday", "linkedin", "external"]
 WorkMode = Literal["remote", "hybrid", "onsite", "unknown"]
 Seniority = Literal["intern", "junior", "middle", "senior", "lead", "unknown"]
-ApplyType = Literal["on_site", "external", "login_required", "unknown"]
+ApplyType = Literal["on_site", "external", "login_required", "linkedin", "unknown"]
 
-ALL_SOURCES: tuple[SourceName, ...] = ("dou", "djinni", "happymonday")
+ALL_SOURCES: tuple[SourceName, ...] = ("dou", "djinni", "happymonday")   # searchable boards
 
 
 def now_iso() -> str:
@@ -57,7 +57,7 @@ class Job(BaseModel):
 
 class SearchQuery(BaseModel):
     keywords: str = Field(description="Role and skills, e.g. 'python django' or 'react typescript'")
-    sources: list[SourceName] = list(ALL_SOURCES)
+    sources: list[Literal["dou", "djinni", "happymonday"]] = list(ALL_SOURCES)
     remote: bool | None = Field(None, description="True: remote only")
     city: str | None = None
     min_salary: int | None = Field(None, description="Drop jobs whose known max salary is below this (USD/month)")

@@ -27,7 +27,7 @@ from jobs_helper.tracker import workspace
 API = "https://api.linkedin.com"
 LINKEDIN_VERSION = os.environ.get("LINKEDIN_VERSION", "202609")
 POST_MAX = 3000
-HEADLINE_MAX, ABOUT_MAX = 220, 2600
+HEADLINE_MAX, ABOUT_MAX, POSITION_MAX = 220, 2600, 2000
 WRITER_ROLES = {"reviewer", "single_agent", "manual"}
 POST_FIELDS = ["post_id", "created_at", "status", "policy", "visibility", "text", "submitted_by"]
 
@@ -126,7 +126,10 @@ class LinkedInService:
                 "url": f"https://www.linkedin.com/feed/update/{post_id}/" if post_id else None}
 
     # ------------------------------------------------------------ save_profile_update
-    def save_profile_update(self, headline: str, about: str, skills: list[str], experience_bullets: list[str] | None = None) -> dict:
+    def save_profile_update(self, headline: str, about: str, skills: list[str], experience_bullets: list[str] | None = None,
+                            positions: list[dict] | None = None, approved_by_candidate: bool = False) -> dict:
+        """Ready-to-paste LinkedIn texts. Draft first; after the candidate approves, a copy-helper page opens next to
+        their profile. LinkedIn has no API to edit a profile and its rules forbid automating it — the human pastes."""
         if self.role not in WRITER_ROLES:
             return err("forbidden", f"Role '{self.role}' may not save profile updates.", "Only the reviewer agent writes.")
         headline, about = (headline or "").strip(), (about or "").strip()
@@ -136,16 +139,87 @@ class LinkedInService:
             return err("headline_too_long", f"Headline has {len(headline)} chars, LinkedIn allows {HEADLINE_MAX}.", "Shorten it.", True)
         if len(about) > ABOUT_MAX:
             return err("about_too_long", f"About has {len(about)} chars, LinkedIn allows {ABOUT_MAX}.", "Shorten it.", True)
-        path = workspace() / "profile_update.md"
-        lines = ["# Оновлення профілю LinkedIn", "", f"_Підготовлено {now_iso()[:10]}. Вставте вручну: "
-                 "LinkedIn → профіль → ✏️ (заголовок), «Про себе», «Навички»._", "",
+        positions = positions or []
+        for p in positions:
+            if len(p.get("description", "")) > POSITION_MAX:
+                return err("position_too_long", f"Description of '{p.get('title')}' exceeds {POSITION_MAX} chars.", "Shorten it.", True)
+        skills = [x.strip() for x in skills if x and x.strip()]
+        warnings = []
+        if len(skills) > 50:
+            warnings.append(f"{len(skills)} skills: LinkedIn shows the first ones; keep the 20-30 most relevant.")
+        unverified = _unverified("\n".join([headline, about, *skills, *(experience_bullets or []),
+                                             *[p.get("description", "") for p in positions]]))
+        if unverified["numbers"] or unverified["technologies"]:
+            warnings.append("Contains facts not found in the candidate's CV / documents — confirm them with the candidate.")
+        ws = workspace()
+        md_path, html_path = ws / "profile_update.md", ws / "profile_update.html"
+        lines = ["# Оновлення профілю LinkedIn", "", f"_Підготовлено {now_iso()[:10]}._", "",
                  "## Заголовок (Headline)", "", headline, "", "## Про себе (About)", "", about, "",
-                 "## Навички (Skills)", "", ", ".join(s.strip() for s in skills if s.strip())]
+                 "## Навички (Skills)", "", ", ".join(skills)]
+        for p in positions:
+            lines += ["", f"## Досвід: {p.get('title', '')} — {p.get('company', '')} ({p.get('dates', '')})", "", p.get("description", "")]
         if experience_bullets:
             lines += ["", "## Пункти досвіду", ""] + [f"- {b.strip()}" for b in experience_bullets if b.strip()]
-        path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-        return {"ok": True, "status": "saved", "path": str(path),
-                "message": "Profile text saved; the candidate pastes it into LinkedIn (the API cannot edit profiles)."}
+        md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        html_path.write_text(_helper_html(headline, about, skills, positions, experience_bullets or []), encoding="utf-8")
+        out = {"ok": True, "path": str(md_path), "helper_page": str(html_path), "unverified": unverified, "warnings": warnings,
+               "preview": {"headline": headline, "about": about[:400] + ("…" if len(about) > 400 else ""), "skills": skills[:30],
+                           "positions": [f"{p.get('title')} — {p.get('company')}" for p in positions]}}
+        if not approved_by_candidate:
+            out.update(status="draft_saved", message="Show this to the candidate. Only after they approve, call again with "
+                                                     "approved_by_candidate=true to open the copy-helper next to their profile.")
+            return out
+        if pol.dry_run():
+            out.update(status="prepared", message="Dry run: the helper page was saved but not opened.")
+            return out
+        self.opener(html_path.as_uri())
+        self.opener("https://www.linkedin.com/in/me/")
+        out.update(status="opened_for_candidate",
+                   message="Opened the copy-helper and the candidate's LinkedIn profile: they paste each block themselves.")
+        return out
+
+
+def _unverified(text: str) -> dict:
+    try:
+        from jobs_helper.cv.review import unverified_claims
+        sources = [pol.read_cv_text(f) for f in pol.candidate_files()]
+        if pol.master_cv_path().exists():
+            sources.append(pol.master_cv_path().read_text(encoding="utf-8"))
+        sources += [n["text"] for n in pol.list_notes()]
+        return unverified_claims(text, "\n".join(sources)) if sources else {"numbers": [], "technologies": []}
+    except Exception:  # noqa: BLE001
+        return {"numbers": [], "technologies": []}
+
+
+def _helper_html(headline: str, about: str, skills: list[str], positions: list[dict], bullets: list[str]) -> str:
+    def block(title: str, where: str, text: str) -> str:
+        bid = f"b{abs(hash(title)) % 10**8}"
+        return (f"<section><h2>{html.escape(title)}</h2><p class='where'>{html.escape(where)}</p>"
+                f"<textarea id='{bid}' readonly>{html.escape(text)}</textarea>"
+                f"<button onclick=\"navigator.clipboard.writeText(document.getElementById('{bid}').value);"
+                f"this.textContent='Скопійовано ✓'\">Копіювати</button><span class='n'>{len(text)} символів</span></section>")
+    parts = [block("Заголовок (Headline)", "Профіль → ✏️ біля імені → Заголовок", headline),
+             block("Про себе (About)", "Профіль → розділ «Про себе» → ✏️", about),
+             block("Навички (Skills)", "Профіль → «Навички» → + (додавайте по одній)", "\n".join(skills))]
+    for p in positions:
+        parts.append(block(f"{p.get('title', '')} — {p.get('company', '')}", f"Профіль → «Досвід» → ✏️ біля посади ({p.get('dates', '')}) → Опис",
+                           p.get("description", "")))
+    if bullets:
+        parts.append(block("Пункти досвіду", "Для опису посад", "\n".join(f"• {b}" for b in bullets)))
+    return f"""<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>Оновлення профілю LinkedIn</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"><style>
+:root {{ --bg:#f4f6f8; --fg:#1d232b; --card:#fff; --muted:#5b6673; --accent:#0a66c2; }}
+@media (prefers-color-scheme: dark) {{ :root {{ --bg:#11151a; --fg:#e6e9ee; --card:#1a2028; --muted:#9aa5b1; --accent:#5aa9ff; }} }}
+body {{ background:var(--bg); color:var(--fg); font:15px/1.5 system-ui,sans-serif; max-width:820px; margin:24px auto; padding:0 16px; }}
+section {{ background:var(--card); border-radius:12px; padding:14px 16px; margin:14px 0; }}
+h1 {{ font-size:22px; }} h2 {{ font-size:16px; margin:0 0 2px; }} .where {{ color:var(--muted); margin:0 0 8px; font-size:13px; }}
+textarea {{ width:100%; min-height:90px; box-sizing:border-box; border:1px solid #c9d1da; border-radius:8px; padding:8px; font:inherit;
+            background:transparent; color:inherit; }}
+button {{ margin-top:8px; background:var(--accent); color:#fff; border:0; border-radius:8px; padding:7px 14px; cursor:pointer; font-weight:600; }}
+.n {{ color:var(--muted); font-size:12px; margin-left:10px; }} a {{ color:var(--accent); }}
+</style></head><body><h1>Оновлення профілю LinkedIn</h1>
+<p>Скопіюйте блок і вставте у відповідне поле. <a href="https://www.linkedin.com/in/me/" target="_blank">Відкрити мій профіль →</a></p>
+{''.join(parts)}</body></html>"""
 
 
 def preview_confirm(text: str, visibility: str) -> bool:

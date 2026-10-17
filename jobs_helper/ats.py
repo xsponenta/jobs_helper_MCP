@@ -49,6 +49,8 @@ def classify_url(url: str | None) -> str:
 def apply_target(job: Job) -> str:
     """Where the application form lives:
     'dou' | 'djinni' | 'happymonday' | 'ats:<name>' | 'company_site' | 'email' | 'not_a_form:<kind>' | 'unknown'."""
+    if job.apply_type == "linkedin":
+        return "not_a_form:linkedin"          # Easy Apply happens in the candidate's own LinkedIn account
     if job.apply_type == "external":
         return classify_url(job.apply_url)
     if job.apply_type in ("on_site", "login_required"):

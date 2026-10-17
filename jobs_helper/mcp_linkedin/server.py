@@ -70,11 +70,16 @@ def save_profile_update(
     about: Annotated[str, Field(description="New 'About' section, up to 2600 chars")],
     skills: Annotated[list[str], Field(description="Skills to list, only ones present in the CV")],
     experience_bullets: Annotated[list[str] | None, Field(description="Optional improved experience bullet points")] = None,
+    positions: Annotated[list[dict[str, str]] | None, Field(description="Per-position texts: [{title, company, dates, description}] (description ≤ 2000 chars)")] = None,
+    approved_by_candidate: Annotated[bool, Field(description="Set true only after the candidate approved the draft: opens a copy-helper next to their profile")] = False,
 ) -> dict[str, Any]:
-    """SAVE ready-to-paste LinkedIn profile text to profile_update.md (state-changing). The LinkedIn API
-    cannot edit profiles, so the candidate pastes it manually."""
-    args = {"headline": headline, "about": about, "skills": skills, "experience_bullets": experience_bullets}
-    return _safe("save_profile_update", args, lambda: service.save_profile_update(headline, about, skills, experience_bullets))
+    """PREPARE a LinkedIn profile update from the CV (state-changing: saves files). First call returns a draft to show the
+    candidate; after their approval call again with approved_by_candidate=true — a page with copy buttons opens next to
+    their LinkedIn profile and they paste each block. LinkedIn offers no API to edit profiles and forbids automating it."""
+    args = {"headline": headline, "about": about, "skills": skills, "experience_bullets": experience_bullets,
+            "positions": positions, "approved_by_candidate": approved_by_candidate}
+    return _safe("save_profile_update", args, lambda: service.save_profile_update(headline, about, skills, experience_bullets,
+                                                                                  positions, approved_by_candidate))
 
 
 def main() -> None:

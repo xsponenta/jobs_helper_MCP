@@ -31,7 +31,7 @@ class Source(ABC):
         """Full vacancy (details_loaded=True). Raises SourceError('job_not_found', ...)."""
 
     def key(self, job_id: str) -> str:
-        prefix = {"dou": "dou:", "djinni": "djinni:", "happymonday": "hm:"}[self.name]
+        prefix = {"dou": "dou:", "djinni": "djinni:", "happymonday": "hm:", "external": ""}[self.name]
         if not job_id.startswith(prefix):
             raise SourceError("invalid_job_id", f"'{job_id}' is not a {self.name} id.", f"Ids of this source start with '{prefix}'.")
         return job_id[len(prefix):]

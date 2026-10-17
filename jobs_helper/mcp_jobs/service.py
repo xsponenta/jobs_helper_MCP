@@ -52,6 +52,8 @@ class SnapshotProvider:
         return self.store.search(q), {}
 
     def get(self, job_id: str) -> Job:
+        if job_id.startswith(("li:", "ext:")):
+            return live_get_job(job_id)
         return self.store.get(job_id)
 
 
@@ -171,6 +173,10 @@ class JobsService:
                        f"Similar open jobs: {alt}", True, similar_open_jobs=similar)
 
         target = apply_target(job)
+        if target == "not_a_form:linkedin":
+            return err("external_apply", f"{job.id} is applied on LinkedIn (Easy Apply), inside the candidate's own account.",
+                       "Automating LinkedIn is against its rules: give the candidate the link and the tailored CV / letter "
+                       "(render_cv) to attach there.", False, url=job.url)
         if target == "email" or target.startswith("not_a_form") or target == "unknown":
             return err("external_apply", f"{job.id} is applied via {target}, which cannot be filled automatically.",
                        "Give the candidate the link and the prepared documents.", False, url=job.apply_url or job.url)

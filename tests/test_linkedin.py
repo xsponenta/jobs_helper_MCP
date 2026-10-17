@@ -87,7 +87,7 @@ def test_validation_and_roles(env):
 def test_profile_update_file(env):
     s = LinkedInService(role="reviewer")
     r = s.save_profile_update("Frontend Developer · React, TypeScript, Next.js", "I build product web apps.", ["React", "TypeScript"])
-    assert r["status"] == "saved"
+    assert r["status"] == "draft_saved"          # nothing opens before the candidate approves
     text = (env / "ws" / "profile_update.md").read_text()
     assert "Frontend Developer" in text and "React, TypeScript" in text
     assert s.save_profile_update("x" * 221, "a", [])["error"] == "headline_too_long"

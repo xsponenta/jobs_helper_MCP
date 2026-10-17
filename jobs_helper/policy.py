@@ -145,6 +145,9 @@ def candidate_files(profile: dict | None = None) -> list[Path]:
         p = Path(str(profile["cv_file"])).expanduser()
         raw.insert(0, str(p if p.is_absolute() else candidate_path().parent / p))
     raw += [str(config.HOME / n) for n in CV_NAMES]
+    docs_dir = config.HOME / "documents"                      # e.g. an imported LinkedIn profile
+    if docs_dir.is_dir():
+        raw += [str(f) for f in sorted(docs_dir.iterdir())]
     for item in raw:
         path = Path(item).expanduser()
         if path.exists() and path.suffix.lower() in DOC_SUFFIXES and path.resolve() not in [f.resolve() for f in found]:

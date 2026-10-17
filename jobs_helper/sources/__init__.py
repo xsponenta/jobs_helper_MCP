@@ -8,16 +8,19 @@ from jobs_helper.models import Job, SearchQuery, SourceName
 from jobs_helper.sources.base import Source, SourceError
 from jobs_helper.sources.djinni import DjinniSource
 from jobs_helper.sources.dou import DouSource
+from jobs_helper.sources.external import ExternalSource
 from jobs_helper.sources.happymonday import HappyMondaySource
 
-PREFIX_TO_SOURCE: dict[str, SourceName] = {"dou": "dou", "djinni": "djinni", "hm": "happymonday"}
+PREFIX_TO_SOURCE: dict[str, SourceName] = {"dou": "dou", "djinni": "djinni", "hm": "happymonday", "li": "external",
+                                           "ext": "external"}
 
 _instances: dict[SourceName, Source] = {}
 
 
 def get_source(name: SourceName) -> Source:
     if name not in _instances:
-        _instances[name] = {"dou": DouSource, "djinni": DjinniSource, "happymonday": HappyMondaySource}[name]()
+        _instances[name] = {"dou": DouSource, "djinni": DjinniSource, "happymonday": HappyMondaySource,
+                            "external": ExternalSource}[name]()
     return _instances[name]
 
 

@@ -1,6 +1,6 @@
 [project]
 name = "jobs-helper-mcp"
-version = "0.7.0"
+version = "0.8.0"
 description = "MCP servers that search DOU, Djinni and Happy Monday and apply to jobs with a truthfully tailored CV"
 readme = "README.md"
 requires-python = ">=3.11"

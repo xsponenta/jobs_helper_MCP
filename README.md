@@ -62,6 +62,11 @@ uv run python -m jobs_helper snapshot --query python --query react --name my_sna
 - `update_application` — новий етап, нотатка, контакт, наступний крок із датою; також для відгуків, зроблених деінде (LinkedIn Easy Apply, рекомендація);
 - `interview_prep` (+ промпт `mock_interview`) — вимоги, ймовірні технічні теми, поведінкові питання, ризикові питання з CV (прогалини, короткі роботи, бракує навичок), факти для STAR-відповідей, бриф компанії й питання до роботодавця; тренувальна співбесіда в чаті.
 
+Таблиці та історія:
+- `job_search_tables` — таблиці для чату: відгуки (дата, компанія, вакансія, сайт, як надіслано, статус, відповідність, версія CV, файли), переглянуті вакансії (відповідність, прапорці, чи був відгук), історія CV, активність по тижнях;
+- `cv_history` — версії основного CV (v0 — оригінальний файл): дата, причина, оцінка, рівень, дизайн, у скількох відгуках використано; перегляд, порівняння, повернення старої версії;
+- `open_dashboard` — локальна сторінка `~/.jobs_helper/dashboard.html` з вкладками, фільтрами, сортуванням і посиланнями на ті самі PDF CV / листа і скріншот, що пішли у форму. Після кожного відгуку ці файли копіюються в `workspace/applications/<id>/`.
+
 Розширення Claude Desktop збирається командою `uv run python scripts/build_mcpb.py` у `release/jobs-helper.mcpb`.
 
 **Claude Desktop:** додай у `claude_desktop_config.json` (шлях до репозиторію — свій):
@@ -163,6 +168,9 @@ jobs_helper/
   insights/          fit.py, redflags.py, company.py, salary.py, interview.py, market.py
   pipeline.py        воронка відгуків (workspace/pipeline.json)
   searches.py        збережені пошуки
+  cv_history.py      версії основного CV
+  activity.py        таблиці: відгуки, переглянуті вакансії, активність по тижнях
+  dashboard.py       локальний HTML-дашборд
 packaging/mcpb/      маніфест і іконка розширення Claude Desktop
 release/             зібране розширення jobs-helper.mcpb
   agents/            рантайм, промпти, оркестратор, трейсинг

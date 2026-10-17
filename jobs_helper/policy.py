@@ -203,3 +203,26 @@ def read_cv_text(path: Path) -> str:
         from docx import Document
         return "\n".join(p.text for p in Document(str(path)).paragraphs).strip()
     return path.read_text(errors="replace", encoding="utf-8").strip()
+
+
+# ------------------------------------------------------------ CV design settings and the improved master CV
+
+CV_DEFAULTS = {"template": "modern", "accent": "#1f5fbf", "max_pages": 2}
+
+
+def cv_settings() -> dict:
+    raw = _load_yaml(settings_path()).get("cv", {}) or {}
+    return {**CV_DEFAULTS, **{k: v for k, v in raw.items() if v not in (None, "")}}
+
+
+def set_cv_settings(**values) -> None:
+    path = settings_path()
+    data = _load_yaml(path)
+    data.setdefault("cv", {}).update({k: v for k, v in values.items() if v is not None})
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False), encoding="utf-8")
+
+
+def master_cv_path() -> Path:
+    """The improved CV the candidate approved (render_cv make_default=True); used instead of the original text."""
+    return config.HOME / "cv_master.md"

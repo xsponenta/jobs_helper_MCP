@@ -1,35 +1,31 @@
-"""Markdown -> PDF for uploading the tailored CV / cover letter (headless Chromium, A4)."""
+"""Documents uploaded to application forms: the tailored CV in the candidate's chosen design + the cover letter."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
-import markdown
-from playwright.sync_api import sync_playwright
-
-from jobs_helper.apply.browser_env import ensure_chromium
-
-CSS = """
-body { font: 10.5pt/1.4 -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; color: #111; margin: 0; }
-h1 { font-size: 20pt; margin: 0 0 4pt; } h2 { font-size: 12.5pt; margin: 14pt 0 4pt; border-bottom: 1px solid #ccc; }
-h3 { font-size: 11pt; margin: 10pt 0 2pt; } p, li { margin: 2pt 0; } ul { padding-left: 16pt; margin: 2pt 0; }
-a { color: #111; text-decoration: none; }
-"""
+from jobs_helper import policy as pol
+from jobs_helper.cv.render import render_cv, render_letter
 
 
 def render_pdfs(docs: dict[str, str], out_dir: Path) -> dict[str, Path]:
-    """{'cv': markdown, 'cover_letter': markdown} -> {'cv': cv.pdf, ...} in out_dir."""
+    """{'cv': markdown, 'cover_letter': text} -> {'cv': <Name>_CV.pdf, 'cover_letter': cover_letter.pdf}"""
     out_dir.mkdir(parents=True, exist_ok=True)
-    ensure_chromium()
-    paths = {}
-    with sync_playwright() as p:
-        browser = p.chromium.launch()
-        page = browser.new_page()
-        for name, md in docs.items():
-            html = markdown.markdown(md, extensions=["extra", "sane_lists"])
-            page.set_content(f"<html><head><meta charset='utf-8'><style>{CSS}</style></head><body>{html}</body></html>")
-            path = out_dir / f"{name}.pdf"
-            page.pdf(path=str(path), format="A4", margin={"top": "16mm", "bottom": "16mm", "left": "16mm", "right": "16mm"})
-            paths[name] = path
-        browser.close()
+    st = pol.cv_settings()
+    paths: dict[str, Path] = {}
+    if "cv" in docs:
+        name = _file_stem(docs["cv"])
+        res = render_cv(docs["cv"], out_dir / f"{name}.pdf", theme=st["template"], accent=st["accent"],
+                        max_pages=int(st["max_pages"]))
+        paths["cv"] = Path(res["path"])
+    if "cover_letter" in docs:
+        paths["cover_letter"] = Path(render_letter(docs["cover_letter"], out_dir / "cover_letter.pdf"))
     return paths
+
+
+def _file_stem(cv_markdown: str) -> str:
+    """'# Olena Kovalenko' -> 'Olena_Kovalenko_CV' (recruiters see the file name)."""
+    import re
+    first = next((line[2:].strip() for line in cv_markdown.splitlines() if line.startswith("# ")), "")
+    clean = re.sub(r"[^\w\s-]", "", first, flags=re.UNICODE).strip()
+    return (re.sub(r"\s+", "_", clean) + "_CV") if clean else "CV"

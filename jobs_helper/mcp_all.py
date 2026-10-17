@@ -22,7 +22,9 @@ INSTRUCTIONS = """Job search and application assistant for ONE candidate (Ukrain
 plus company career sites / ATS, plus the candidate's LinkedIn).
 
 Workflow: get_candidate first (profile, CV, other documents, remembered facts) -> search_jobs -> get_job for each
-shortlisted vacancy -> tailor the CV and write a cover letter -> apply. For LinkedIn: publish_post, save_profile_update.
+shortlisted vacancy -> tailor the CV and write a cover letter -> apply.
+CV quality: review_cv scores the CV (optionally against a vacancy) and shows its first page; fix content with the
+candidate's facts and fix weak design / ATS problems with render_cv (make_default=True to keep the improved version). For LinkedIn: publish_post, save_profile_update.
 When the candidate mentions a new fact about themselves, save it with remember_candidate_info (it becomes part of their
 CV facts permanently). Change the sending mode only on request (set_submit_policy).
 
@@ -52,9 +54,15 @@ def get_candidate() -> dict[str, Any]:
                             "Command line: `jobs-helper init`.", "retryable": False}
         public = {k: v for k, v in profile.items() if k not in ("sensitive", "cv_file", "saved_answers")}
         main_cv = pol.cv_file(profile)
-        out: dict[str, Any] = {"profile": public, "data_dir": str(config.HOME), "main_cv_file": str(main_cv) if main_cv else None}
-        if main_cv:
+        out: dict[str, Any] = {"profile": public, "data_dir": str(config.HOME), "main_cv_file": str(main_cv) if main_cv else None,
+                               "cv_design": pol.cv_settings()}
+        master = pol.master_cv_path()
+        if master.exists():
+            out["cv_text"] = master.read_text(encoding="utf-8")[:30000]
+            out["cv_source"] = "improved master CV approved by the candidate (render_cv make_default); the original file is main_cv_file"
+        elif main_cv:
             out["cv_text"] = pol.read_cv_text(main_cv)[:30000]
+            out["cv_source"] = "the candidate's original CV file"
         else:
             out["hint"] = "No CV file found: ask the candidate to add it in the extension settings or attach it in the chat."
         others = [f for f in pol.candidate_files(profile) if f != main_cv]
@@ -110,6 +118,123 @@ def set_submit_policy(
         out["warning"] = (f"The 'send automatically' switch for {site} is on in the extension settings, so '{effective}' still "
                           "applies. Turn it off in Settings → Extensions → Jobs Helper.")
     return out
+
+
+def _sources_text(profile: dict) -> str:
+    """Everything the candidate gave us — the reference for 'unverified' checks."""
+    parts = [pol.read_cv_text(f) for f in pol.candidate_files(profile)]
+    if pol.master_cv_path().exists():
+        parts.append(pol.master_cv_path().read_text(encoding="utf-8"))
+    parts += [n["text"] for n in pol.list_notes()]
+    return "\n".join(parts)
+
+
+def _job_text(job_id: str | None) -> tuple[str | None, dict | None]:
+    if not job_id:
+        return None, None
+    job = jobs_server.get_service().get_job(job_id)
+    if "error" in job:
+        return None, job
+    return f"{job.get('title', '')}\n{job.get('description', '')}", None
+
+
+@mcp.tool(structured_output=False)
+def review_cv(
+    job_id: Annotated[str | None, Field(description="Optional vacancy id: also score how well the CV matches it")] = None,
+    cv_markdown: Annotated[str | None, Field(description="A CV draft to review (e.g. a tailored or improved version). Omit to review the candidate's own CV file")] = None,
+    include_preview: Annotated[bool, Field(description="Attach an image of the first page so you can judge the visual design")] = True,
+) -> list[Any]:
+    """EVALUATE a CV: overall score, scores for ATS readability / completeness / impact / readability / vacancy match,
+    concrete issues with fixes, and (for a draft) numbers or technologies not found in the candidate's documents.
+    Also returns an image of the first page: judge the visual design yourself (hierarchy, whitespace, fonts, alignment,
+    consistency) and explain to the candidate what to improve and how."""
+    from jobs_helper.cv.render import pdf_preview, render_cv as _render
+    from jobs_helper.cv.review import review, unverified_claims
+    from mcp.server.mcpserver import Image
+    try:
+        profile = pol.load_candidate() or {}
+        job_text, job_err = _job_text(job_id)
+        if job_err:
+            return [job_err]
+        tmp = config.HOME / "workspace" / ".tmp"
+        tmp.mkdir(parents=True, exist_ok=True)
+        preview = None
+        if cv_markdown:
+            report = review(cv_markdown, None, job_text)
+            report["reviewed"] = "draft"
+            report["unverified"] = unverified_claims(cv_markdown, _sources_text(profile))
+            if include_preview:
+                st = pol.cv_settings()
+                r = _render(cv_markdown, tmp / "review_draft.pdf", theme=st["template"], accent=st["accent"],
+                            max_pages=int(st["max_pages"]), preview_png=tmp / "review_draft.png")
+                preview, report["rendered_pages"] = r["preview"], r["pages"]
+        else:
+            path = pol.cv_file(profile)
+            if not path:
+                return [{"error": "cv_file_missing", "message": "No CV file is configured.",
+                         "hint": "Ask the candidate to add their CV in the extension settings.", "retryable": False}]
+            report = review(pol.read_cv_text(path), path, job_text)
+            report["reviewed"] = f"original file {path.name}"
+            if include_preview and path.suffix.lower() == ".pdf":
+                p = pdf_preview(path, tmp / "review_original.png")
+                preview = str(p) if p else None
+            elif include_preview:
+                report["preview_note"] = (f"No page image: the CV is a .{path.suffix.lstrip('.')} file, only PDFs can be previewed. "
+                                          "Do not comment on its visual design; offer render_cv for a designed PDF.")
+        report["next_steps"] = ("Explain the scores and the top fixes to the candidate in plain words. Content fixes need the "
+                                "candidate's facts (ask, then remember_candidate_info). Design / ATS problems are fixed by "
+                                "render_cv (single-column themes: modern, classic, compact).")
+        out: list[Any] = [report]
+        if preview:
+            out.append(Image(path=preview))
+        return out
+    except Exception as e:  # noqa: BLE001
+        return [{"error": "internal_error", "message": f"{type(e).__name__}: {e}", "hint": "Check the CV file.", "retryable": False}]
+
+
+@mcp.tool(structured_output=False)
+def render_cv(
+    cv_markdown: Annotated[str, Field(description="Complete CV in markdown: '# Name', a title line, a contacts line, then '## Section' blocks; job entries as '**Role — Company** · Mon YYYY – Mon YYYY' followed by '- ' bullets")],
+    template: Annotated[Literal["modern", "classic", "compact"], Field(description="modern: accent headings; classic: serif, centered header; compact: dense, fits one page")] = "modern",
+    accent: Annotated[str | None, Field(description="Accent colour as hex, e.g. '#1f5fbf' (modern / compact)")] = None,
+    max_pages: Annotated[int, Field(description="Shrink typography until it fits (1 or 2)")] = 2,
+    make_default: Annotated[bool, Field(description="Use this CV and design from now on (for all applications and future tailoring)")] = False,
+    confirmed_by_candidate: Annotated[bool, Field(description="The candidate confirmed every number / technology flagged as unverified")] = False,
+) -> list[Any]:
+    """BUILD a well-designed, ATS-friendly PDF of a CV (state-changing: saves the file) and return its first page as an
+    image. Use it to fix a CV whose design is weak or unreadable for ATS. With make_default=True the CV text and the
+    design become the candidate's default — refused while it contains unverified facts unless the candidate confirmed them."""
+    from jobs_helper.cv.render import render_cv as _render
+    from jobs_helper.cv.review import review, unverified_claims
+    from jobs_helper.apply.pdf import _file_stem
+    from mcp.server.mcpserver import Image
+    try:
+        if not cv_markdown or not cv_markdown.lstrip().startswith("# "):
+            return [{"error": "invalid_argument", "message": "cv_markdown must start with '# Full Name'.",
+                     "hint": "See the parameter description for the expected structure.", "retryable": True}]
+        profile = pol.load_candidate() or {}
+        unverified = unverified_claims(cv_markdown, _sources_text(profile))
+        if make_default and (unverified["numbers"] or unverified["technologies"]) and not confirmed_by_candidate:
+            return [{"error": "unverified_facts", "message": "The CV contains facts not found in the candidate's documents.",
+                     "unverified": unverified, "hint": "Ask the candidate to confirm (then remember_candidate_info and retry with "
+                     "confirmed_by_candidate=true) or remove them.", "retryable": True}]
+        st = pol.cv_settings()
+        out_dir = config.HOME / "generated"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        stem = _file_stem(cv_markdown) + ("" if template == "modern" else f"_{template}")
+        res = _render(cv_markdown, out_dir / f"{stem}.pdf", theme=template, accent=accent or st["accent"],
+                      max_pages=max_pages, preview_png=out_dir / f"{stem}.png")
+        result = {"ok": True, "path": res["path"], "pages": res["pages"], "template": template,
+                  "fit_scale": res["scale"], "unverified": unverified, "quality": review(cv_markdown)["scores"]}
+        if res.get("does_not_fit"):
+            result["does_not_fit"] = res["does_not_fit"]
+        if make_default:
+            pol.master_cv_path().write_text(cv_markdown.strip() + "\n", encoding="utf-8")
+            pol.set_cv_settings(template=template, accent=accent or st["accent"], max_pages=max_pages)
+            result["default"] = "Saved: this CV text and design are now used for all applications."
+        return [result, Image(path=res["preview"])]
+    except Exception as e:  # noqa: BLE001
+        return [{"error": "internal_error", "message": f"{type(e).__name__}: {e}", "hint": "Check the markdown.", "retryable": False}]
 
 
 for fn in (jobs_server.search_jobs, jobs_server.get_job, jobs_server.apply,

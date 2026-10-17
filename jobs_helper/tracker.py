@@ -17,7 +17,7 @@ ACTIVE = {"submitted", "awaiting_user"}
 
 
 def workspace() -> Path:
-    path = Path(os.environ.get("JOBS_WORKSPACE", config.ROOT / "workspace"))
+    path = Path(os.environ.get("JOBS_WORKSPACE", config.HOME / "workspace"))
     path.mkdir(parents=True, exist_ok=True)
     return path
 

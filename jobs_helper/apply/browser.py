@@ -27,9 +27,10 @@ from jobs_helper.apply.fields import FormField
 from jobs_helper.apply.page_js import CONFIRM_BANNER, EXTRACT_FORM, SUCCESS_RE, VALIDATION_ERRORS
 from jobs_helper.apply.pdf import render_pdfs
 from jobs_helper.apply.planner import plan_fill
+from jobs_helper.apply.sites import LOGIN_URLS
 from jobs_helper.tracker import workspace
 
-PROFILES_DIR = config.ROOT / ".browser_profiles"
+PROFILES_DIR = config.HOME / ".browser_profiles"
 APPLY_BUTTON = re.compile(r"^\s*(apply( now| for this (job|position))?|i'?m interested|подати( заявку)?|податися( на вакансію)?|"
                           r"відгукнутися( на вакансію)?|відгукнутись|откликнуться)\s*$", re.I)
 COOKIE_BUTTON = re.compile(r"^\s*(accept( all)?( cookies)?|allow all|agree|i agree|got it|ok|decline all|reject all|"
@@ -79,6 +80,12 @@ class BrowserBackend:
         self._dismiss_cookies(page)
 
         blocked = self._open_form(page, ctx, req)
+        if isinstance(blocked, ApplyOutcome) and (blocked.error or {}).get("error") == "not_logged_in" and not req.dry_run:
+            # the candidate is at the screen: let them log in right here, then continue with the same form
+            if self._interactive_login(page, req.target, start_url):
+                page.goto(start_url, wait_until="domcontentloaded", timeout=45000)
+                page.wait_for_timeout(1500)
+                blocked = self._open_form(page, ctx, req)
         if isinstance(blocked, ApplyOutcome):
             return blocked
         page = blocked
@@ -96,7 +103,7 @@ class BrowserBackend:
             linkedin = (req.profile.get("links") or {}).get("linkedin")
             if not linkedin:
                 return ApplyOutcome("failed", error=_err("not_logged_in", "Anonymous Djinni apply needs a LinkedIn URL.",
-                    "Add links.linkedin to candidate.yaml or run `uv run python -m jobs_helper login djinni`."))
+                    "Add the LinkedIn URL to the candidate profile, or log in to Djinni (`jobs-helper login djinni`)."))
             cover = f"{cover.rstrip()}\n\nLinkedIn: {linkedin}"
         plan = plan_fill(fields, req.profile, req.answers, req.job.source, req.cv_markdown, cover)
         if not plan.complete:
@@ -140,7 +147,7 @@ class BrowserBackend:
             btn = page.locator("a.js_job_click").first
             if btn.count() and "/profile/login" in (btn.get_attribute("href") or ""):
                 return ApplyOutcome("failed", error=_err("not_logged_in", "No Happy Monday session.",
-                                                         "Ask the candidate to run `uv run python -m jobs_helper login happymonday`."))
+                                                         "Log in to Happy Monday: run the apply again with a visible browser, or `jobs-helper login happymonday`."))
             return self._click_apply(page, ctx, btn if btn.count() else None)
         if t == "dou":
             btn = page.locator("a[href='#apply'], .reply a").first
@@ -148,7 +155,7 @@ class BrowserBackend:
             body = page.inner_text("body")[:20000]
             if re.search(r"увійдіть|зареєструйтесь|login|sign in", body, re.I) and not page.locator("textarea:visible").count():
                 return ApplyOutcome("failed", error=_err("not_logged_in", "No DOU session.",
-                                                         "Ask the candidate to run `uv run python -m jobs_helper login dou`."))
+                                                         "Log in to DOU: run the apply again with a visible browser, or `jobs-helper login dou`."))
             return page
         if t == "djinni":
             btn = page.locator("button.js-inbox-toggle-reply-form").first
@@ -157,6 +164,25 @@ class BrowserBackend:
                 page.wait_for_timeout(1200)
             return page
         return page  # ATS / company site: handled by _find_form
+
+    def _interactive_login(self, page: Page, site: str, return_url: str) -> bool:
+        url = LOGIN_URLS.get(site)
+        if not url:
+            return False
+        if site == "happymonday":
+            url += f"?redirect_to={return_url}"
+        page.goto(url, wait_until="domcontentloaded", timeout=45000)
+        try:
+            page.evaluate(CONFIRM_BANNER, [f"Увійдіть у свій акаунт ({site})",
+                                           "Після входу відгук продовжиться автоматично. Пароль бачите тільки ви.", None, None])
+        except Exception:  # noqa: BLE001 — the banner is a hint only
+            pass
+        try:
+            page.wait_for_url(lambda u: "login" not in u and "signin" not in u, timeout=self.human_timeout)
+            page.wait_for_timeout(1500)
+            return True
+        except Exception:  # noqa: BLE001 — timeout or window closed
+            return False
 
     def _click_apply(self, page: Page, ctx, btn) -> Page:
         before = len(ctx.pages)

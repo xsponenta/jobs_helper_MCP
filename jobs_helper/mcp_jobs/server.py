@@ -132,6 +132,7 @@ def policy_resource() -> str:
 def find_and_apply(request: str, max_applications: int = 1) -> str:
     return (
         f"Candidate request: {request}\n\n"
+        "0. If the candidate's CV is not in the conversation yet, call get_candidate (or ask them to attach it).\n"
         f"1. Use search_jobs (1-3 focused queries) and open every candidate vacancy with get_job.\n"
         f"2. Pick at most {max_applications} vacancies that really fit the candidate's CV.\n"
         "3. Tailor the CV and write a cover letter using ONLY facts from the candidate's CV — never add skills, "

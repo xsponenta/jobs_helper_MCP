@@ -5,7 +5,9 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from pathlib import Path
 
+from jobs_helper.apply.sites import LOGIN_URLS
 from jobs_helper.models import ALL_SOURCES, SearchQuery
 from jobs_helper.snapshot import SnapshotStore, latest_snapshot, take_snapshot
 from jobs_helper.sources import get_job, get_source, search_all
@@ -86,13 +88,6 @@ def cmd_policy(args) -> int:
     return 0
 
 
-LOGIN_URLS = {
-    "djinni": "https://djinni.co/login",
-    "dou": "https://dou.ua/login/",
-    "happymonday": "https://happymonday.ua/profile/login",
-}
-
-
 def cmd_login(args) -> int:
     """Opens a visible browser with the candidate's persistent profile; the human logs in and closes the window.
     The password never reaches the agents or this program."""
@@ -103,6 +98,8 @@ def cmd_login(args) -> int:
         from jobs_helper.linkedin.oauth import oauth_login
         print(oauth_login())
         return 0
+    from jobs_helper.apply.browser_env import ensure_chromium
+    ensure_chromium()
     profile = PROFILES_DIR / args.site
     with sync_playwright() as p:
         ctx = p.chromium.launch_persistent_context(str(profile), headless=False, locale="uk-UA")
@@ -114,6 +111,66 @@ def cmd_login(args) -> int:
         finally:
             ctx.close()
     print(f"Сесію збережено в {profile}")
+    return 0
+
+
+def cmd_init(args) -> int:
+    """First-run setup for installed users: data folder, profile template, CV, browser."""
+    import shutil
+    from importlib.resources import files
+
+    from jobs_helper import config
+    from jobs_helper import policy as pol
+    home = config.HOME
+    home.mkdir(parents=True, exist_ok=True)
+    cand = pol.candidate_path()
+    if not cand.exists():
+        cand.write_text((files("jobs_helper") / "templates" / "candidate.example.yaml").read_text())
+        print(f"Створено шаблон профілю: {cand}")
+    else:
+        print(f"Профіль уже є: {cand}")
+    if args.cv:
+        src = Path(args.cv).expanduser()
+        if not src.exists():
+            print(f"CV не знайдено: {src}")
+            return 1
+        dst = home / f"cv{src.suffix.lower()}"
+        shutil.copy(src, dst)
+        print(f"CV скопійовано: {dst}")
+    if not pol.settings_path().exists():
+        for site, value in pol.DEFAULTS.items():
+            pol.set_policy(site, value)
+        print(f"Політика відправки за замовчуванням: {pol.settings_path()}")
+    if not args.skip_browser:
+        from jobs_helper.apply.browser_env import ensure_chromium
+        ensure_chromium()
+        print("Браузер Chromium готовий.")
+    print(f"\nДалі: відкрий {cand} і заповни ім'я, email, телефон, місто, LinkedIn.\n"
+          "Перевірка: jobs-helper status")
+    return 0
+
+
+def cmd_status(args) -> int:
+    """What is configured and what is missing — handy when something does not work."""
+    from jobs_helper import config
+    from jobs_helper import policy as pol
+    from jobs_helper.apply.browser import PROFILES_DIR
+    from jobs_helper.linkedin.oauth import load_token
+    prof = pol.load_candidate() or {}
+    p = prof.get("personal") or {}
+    cv = pol.cv_file(prof)
+    ok = lambda b: "✅" if b else "❌"  # noqa: E731
+    print(f"Папка даних: {config.HOME}")
+    print(f"{ok(p.get('first_name') and p.get('last_name'))} ім'я: {p.get('first_name', '')} {p.get('last_name', '')}")
+    print(f"{ok(p.get('email'))} email: {p.get('email', '')}")
+    print(f"{ok(p.get('phone'))} телефон: {p.get('phone', '')}")
+    print(f"{ok((prof.get('links') or {}).get('linkedin'))} LinkedIn URL (потрібен для анонімного відгуку на Djinni)")
+    print(f"{ok(cv)} CV: {cv or 'не знайдено (cv_file у профілі або cv.pdf / cv.docx / cv.md у папці даних)'}")
+    for site in ("djinni", "dou", "happymonday"):
+        print(f"{ok((PROFILES_DIR / site).exists())} сесія {site} (`jobs-helper login {site}`; або вхід відкриється сам під час відгуку)")
+    tok = load_token()
+    print(f"{ok(tok and not tok['expired'])} LinkedIn API (необов'язково: без нього пост відкривається у вікні LinkedIn)")
+    print("Політика відправки: " + ", ".join(f"{k}={v}" for k, v in pol.load_policies().items()))
     return 0
 
 
@@ -154,6 +211,14 @@ def main(argv: list[str] | None = None) -> int:
     pp.add_argument("site", nargs="?", choices=["dou", "djinni", "happymonday", "ats", "linkedin"])
     pp.add_argument("value", nargs="?", choices=["manual", "confirm", "auto"])
     pp.set_defaults(fn=cmd_policy)
+
+    ini = sub.add_parser("init", help="first-run setup: data folder, profile template, CV, browser")
+    ini.add_argument("--cv", help="path to your CV (pdf, docx, md, txt)")
+    ini.add_argument("--skip-browser", action="store_true")
+    ini.set_defaults(fn=cmd_init)
+
+    st = sub.add_parser("status", help="show what is configured")
+    st.set_defaults(fn=cmd_status)
 
     lg = sub.add_parser("login", help="log in to a job board (browser) or LinkedIn (OAuth) as the candidate")
     lg.add_argument("site", choices=["djinni", "dou", "happymonday", "linkedin"])

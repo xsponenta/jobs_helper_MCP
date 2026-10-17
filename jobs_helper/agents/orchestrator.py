@@ -45,7 +45,7 @@ def make_context(run_dir: Path, run_id: str, candidate_dir: Path, *, snapshot: s
         snapshot = str(Path(snapshot).resolve())
     env = {"JOBS_WORKSPACE": str((workspace or run_dir / "workspace").resolve()),
            "JOBS_CANDIDATE": str(candidate_dir / "candidate.yaml"),
-           "JOBS_SETTINGS": os.environ.get("JOBS_SETTINGS", str(config.ROOT / "settings.yaml")),
+           "JOBS_SETTINGS": os.environ.get("JOBS_SETTINGS", str(config.HOME / "settings.yaml")),
            "JOBS_APPLY_BACKEND": os.environ.get("JOBS_APPLY_BACKEND", "mock")}
     if snapshot:
         env["JOBS_SNAPSHOT"] = snapshot

@@ -27,7 +27,7 @@ SCOPES = "openid profile email w_member_social"
 
 
 def secrets_dir() -> Path:
-    return Path(os.environ.get("JOBS_SECRETS_DIR", config.ROOT / ".secrets"))
+    return Path(os.environ.get("JOBS_SECRETS_DIR", config.HOME / ".secrets"))
 
 
 def token_path() -> Path:

@@ -20,3 +20,6 @@ settings.yaml
 
 # candidate applications tracker and documents
 workspace/
+
+# build staging (the packed .mcpb in release/ is committed)
+dist/

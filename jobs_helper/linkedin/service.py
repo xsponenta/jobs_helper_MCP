@@ -91,11 +91,15 @@ class LinkedInService:
         if pol.dry_run():
             self._record(status="prepared", policy="dry_run", visibility=visibility, text=text)
             return {"ok": True, "status": "prepared", "policy": "dry_run", "message": "Draft saved (dry run): nothing was published."}
+        note = ""
+        if policy in ("confirm", "auto") and not load_token():
+            # no LinkedIn app / token (typical for non-technical users): the share dialog needs no API at all
+            policy, note = "manual", " LinkedIn API is not connected, so the share dialog was used instead."
         if policy == "manual":
             self.opener("https://www.linkedin.com/feed/?shareActive=true&text=" + quote(text))
             self._record(status="awaiting_user", policy=policy, visibility=visibility, text=text)
             return {"ok": True, "status": "awaiting_user", "policy": policy,
-                    "message": "LinkedIn's share dialog was opened with the text; the candidate publishes it."}
+                    "message": "LinkedIn's share dialog was opened with the text; the candidate publishes it." + note}
         token, e = self._token()
         if e:
             return e
@@ -155,6 +159,8 @@ button{{margin:16px 8px 0 0;padding:10px 18px;border:0;border-radius:8px;font-we
 <body><h2>Опублікувати в LinkedIn ({visibility})?</h2><div class="card">{html.escape(text)}</div>
 <button style="background:#0a66c2" onclick="window.__jh_decision='yes'">Опублікувати</button>
 <button style="background:#64748b" onclick="window.__jh_decision='no'">Скасувати</button></body></html>"""
+    from jobs_helper.apply.browser_env import ensure_chromium
+    ensure_chromium()
     timeout = int(os.environ.get("JOBS_HUMAN_TIMEOUT", "900")) * 1000
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)

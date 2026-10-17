@@ -91,3 +91,10 @@ def test_profile_update_file(env):
     text = (env / "ws" / "profile_update.md").read_text()
     assert "Frontend Developer" in text and "React, TypeScript" in text
     assert s.save_profile_update("x" * 221, "a", [])["error"] == "headline_too_long"
+
+
+def test_without_token_falls_back_to_share_dialog(env):
+    policy(env, "auto")
+    opened = []
+    r = LinkedInService(client=api([]), role="reviewer", opener=opened.append).publish_post("Open to work")
+    assert r["status"] == "awaiting_user" and "not connected" in r["message"] and opened

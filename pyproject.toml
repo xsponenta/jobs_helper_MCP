@@ -1,32 +1,47 @@
 [project]
 name = "jobs-helper-mcp"
-version = "0.1.0"
-description = "Job search and application assistant built on MCP and two cooperating agents"
-requires-python = ">=3.13"
+version = "0.2.0"
+description = "MCP servers that search DOU, Djinni and Happy Monday and apply to jobs with a truthfully tailored CV"
+readme = "README.md"
+requires-python = ">=3.11"
 dependencies = [
-    "beautifulsoup4>=4.15.0",
-    "claude-agent-sdk>=0.2.168",
-    "feedparser>=6.0.14",
-    "httpx>=0.28.1",
-    "ipykernel>=7.4.0",
-    "lxml>=6.1.3",
-    "markdown>=3.11.1",
+    "beautifulsoup4>=4.12",
+    "feedparser>=6.0.10",
+    "httpx>=0.27",
+    "lxml>=5.0",
+    "markdown>=3.5",
     "mcp>=2.3.0",
-    "nbconvert>=7.17.2",
-    "nbformat>=5.11.1",
-    "pandas>=3.0.6",
-    "playwright>=1.64.0",
-    "pydantic>=2.14.1",
-    "pyyaml>=6.0.3",
+    "playwright>=1.48",
+    "pydantic>=2.7",
+    "pypdf>=4.0",
+    "python-docx>=1.1",
+    "pyyaml>=6.0",
 ]
+
+[project.scripts]
+jobs-helper = "jobs_helper.cli:main"
+jobs-helper-mcp = "jobs_helper.mcp_all:main"
+jobs-mcp = "jobs_helper.mcp_jobs.server:main"
+linkedin-mcp = "jobs_helper.mcp_linkedin.server:main"
+
+[project.urls]
+Repository = "https://github.com/xsponenta/jobs_helper_MCP"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["jobs_helper"]
+
+# development only: not installed for `uvx --from git+...` users
+[dependency-groups]
+dev = ["pytest>=9.1.1"]
+agents = ["claude-agent-sdk>=0.2.168"]
+notebooks = ["pandas>=2.2", "ipykernel>=6.29", "nbconvert>=7.16", "nbformat>=5.10"]
 
 [tool.uv]
-package = false
-
-[dependency-groups]
-dev = [
-    "pytest>=9.1.1",
-]
+default-groups = ["dev", "agents", "notebooks"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

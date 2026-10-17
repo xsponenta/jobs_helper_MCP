@@ -7,6 +7,8 @@ from pathlib import Path
 import markdown
 from playwright.sync_api import sync_playwright
 
+from jobs_helper.apply.browser_env import ensure_chromium
+
 CSS = """
 body { font: 10.5pt/1.4 -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; color: #111; margin: 0; }
 h1 { font-size: 20pt; margin: 0 0 4pt; } h2 { font-size: 12.5pt; margin: 14pt 0 4pt; border-bottom: 1px solid #ccc; }
@@ -18,6 +20,7 @@ a { color: #111; text-decoration: none; }
 def render_pdfs(docs: dict[str, str], out_dir: Path) -> dict[str, Path]:
     """{'cv': markdown, 'cover_letter': markdown} -> {'cv': cv.pdf, ...} in out_dir."""
     out_dir.mkdir(parents=True, exist_ok=True)
+    ensure_chromium()
     paths = {}
     with sync_playwright() as p:
         browser = p.chromium.launch()

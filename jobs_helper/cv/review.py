@@ -126,9 +126,14 @@ def _sections(text: str) -> set[str]:
     return found
 
 
+_AMBIGUOUS = {"r": r"(?<![\w.+#&/-])R(?![\w+#&/'’-])(?!\s+(?:and|&)\s+D)", "go": r"(?<![\w.+#-])Go(?![\w+#-])(?!\s+(?:to|live|beyond|ahead)\b)"}
+
+
 def terms(text: str) -> set[str]:
+    """Technologies mentioned; 'R' and 'Go' only when written as names (capitalised, not 'R&D' / 'go live')."""
     low = text.lower()
-    return {t for t in TECH if re.search(rf"(?<![\w.+#-]){re.escape(t)}(?![\w+#-])", low)}
+    found = {t for t in TECH if t not in _AMBIGUOUS and re.search(rf"(?<![\w.+#-]){re.escape(t)}(?![\w+#-])", low)}
+    return found | {t for t, pat in _AMBIGUOUS.items() if re.search(pat, text)}
 
 
 def ats_name_issue(view: dict) -> list[dict]:

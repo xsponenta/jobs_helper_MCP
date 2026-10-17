@@ -229,3 +229,14 @@ def set_cv_settings(**values) -> None:
 def master_cv_path() -> Path:
     """The improved CV the candidate approved (render_cv make_default=True); used instead of the original text."""
     return config.HOME / "cv_master.md"
+
+
+def current_cv_text(profile: dict | None = None) -> str:
+    """The CV the candidate stands behind now: the approved master CV, else their original file, else ''."""
+    if master_cv_path().exists():
+        return master_cv_path().read_text(encoding="utf-8")
+    path = cv_file(profile if profile is not None else load_candidate())
+    try:
+        return read_cv_text(path) if path else ""
+    except Exception:  # noqa: BLE001 — an unreadable file is the same as no CV here
+        return ""

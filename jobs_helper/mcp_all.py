@@ -18,6 +18,7 @@ from pathlib import Path
 
 from jobs_helper import config
 from jobs_helper import policy as pol
+from jobs_helper import mcp_career
 from jobs_helper.cv.builder import Contacts, Education, Position, Project
 from jobs_helper.mcp_jobs import server as jobs_server
 from jobs_helper.mcp_linkedin import server as linkedin_server
@@ -30,6 +31,12 @@ shortlisted vacancy -> tailor the CV and write a cover letter -> apply.
 LinkedIn: read_vacancy reads a LinkedIn job link the candidate pastes (Easy Apply stays with the candidate);
 import_linkedin_profile turns their LinkedIn PDF / data archive into a CV draft; save_profile_update prepares profile
 texts from the CV and, after approval, opens a copy-helper (no automatic changes on LinkedIn).
+Search: search_jobs(sort_by="fit") ranks by fit with the CV; get_job adds fit and warnings (red / green flags) — mention
+high-risk warnings before applying. saved_search keeps standing queries and shows only new vacancies.
+Research: company_insights (DOU rating, employee-review themes, spheres), salary_insights (DOU salary survey),
+market_skill_gap (what the market asks for a role vs the CV, learning plan).
+After applying: pipeline_report (stages, funnel, follow-ups due); update_application when the candidate reports news
+(also for applications made elsewhere). Interviews: interview_prep(job_id), then the mock_interview prompt.
 CV quality: review_cv scores the CV like recruiters and ATS screen it (knock-outs for a vacancy, 6-second scan, ATS parse,
 content, measured design; levels Bronze → Platinum with points per fix) and shows its first page. Fix content with the
 candidate's facts; fix weak design / ATS problems with render_cv; no CV at all → create_cv (interview prompt
@@ -326,6 +333,11 @@ def read_vacancy(
         return {"error": e.code, "message": e.message, "hint": e.hint, "retryable": e.code in ("source_unavailable", "invalid_argument")}
     out: dict[str, Any] = {"job_id": job.id, "vacancy": job.short() | {"description": job.description[:3000]},
                            "apply_target": apply_target(job)}
+    try:
+        from jobs_helper.insights.redflags import vacancy_flags
+        out["warnings"] = vacancy_flags(job)
+    except Exception:  # noqa: BLE001
+        pass
     profile = pol.load_candidate() or {}
     cv_text = (pol.master_cv_path().read_text(encoding="utf-8") if pol.master_cv_path().exists()
                else (pol.read_cv_text(f) if (f := pol.cv_file(profile)) else ""))
@@ -444,8 +456,10 @@ def create_cv_interview(target_role: str, about_me: str = "") -> str:
 
 
 for fn in (jobs_server.search_jobs, jobs_server.get_job, jobs_server.apply,
-           linkedin_server.get_profile, linkedin_server.publish_post, linkedin_server.save_profile_update):
+           linkedin_server.get_profile, linkedin_server.publish_post, linkedin_server.save_profile_update, *mcp_career.TOOLS):
     mcp.tool()(fn)
+mcp.prompt(title="Mock interview", description="Interview practice for a vacancy: one question at a time with feedback")(
+    mcp_career.mock_interview)
 
 mcp.resource("jobs://applications", name="applications", description="Applications tracker",
              mime_type="application/json")(jobs_server.applications_resource)

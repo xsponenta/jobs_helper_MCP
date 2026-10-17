@@ -92,23 +92,46 @@ class JobsService:
     # ------------------------------------------------------------ search_jobs
     def search_jobs(self, keywords: str, sources: list[SourceName] | None = None, remote: bool | None = None,
                     city: str | None = None, min_salary: int | None = None,
-                    max_experience_years: float | None = None, limit: int = 10) -> dict:
+                    max_experience_years: float | None = None, limit: int = 10, sort_by: str = "relevance") -> dict:
         if not keywords or not keywords.strip():
             return err("invalid_argument", "keywords is empty.", "Pass a role and key skills, e.g. 'python django'.", True)
         if not 1 <= limit <= 20:
             return err("invalid_argument", f"limit={limit} is out of range.", "Use 1..20.", True)
         if min_salary is not None and min_salary < 0:
             return err("invalid_argument", "min_salary must be >= 0.", "Monthly USD, e.g. 3000.", True)
+        if sort_by not in ("relevance", "fit", "date"):
+            return err("invalid_argument", f"sort_by={sort_by!r}.", "Use relevance, fit or date.", True)
         q = SearchQuery(keywords=keywords, sources=sources or ["dou", "djinni", "happymonday"], remote=remote,
-                        city=city, min_salary=min_salary, max_experience_years=max_experience_years, limit=limit)
+                        city=city, min_salary=min_salary, max_experience_years=max_experience_years,
+                        limit=limit if sort_by == "relevance" else min(3 * limit, 60))
         jobs, errors = self.provider.search(q)
-        jobs = [j for j in jobs if self._is_open(j)]
-        out = {"count": len(jobs), "data_source": self.provider.name, "jobs": [j.short() for j in jobs]}
+        jobs = _dedupe([j for j in jobs if self._is_open(j)])
+        _remember(jobs)
+        ctx = self._fit_context()
+        rows = [_short(j, ctx) for j in jobs]
+        if sort_by == "fit" and ctx.get("has_cv"):
+            rows.sort(key=lambda r: (r.get("fit") or 0), reverse=True)
+        elif sort_by == "date":
+            published = {j.id: j.published_at or "" for j in jobs}
+            rows.sort(key=lambda r: published[r["job_id"]], reverse=True)
+        rows = rows[:limit]
+        out = {"count": len(rows), "data_source": self.provider.name, "sorted_by": sort_by, "jobs": rows}
+        if ctx.get("has_cv"):
+            out["fit_note"] = ("fit 0-100 compares each vacancy with the candidate's CV (skills, years, English, level); "
+                               "knockouts are filters a recruiter or ATS would reject on.")
         if errors:
             out["source_errors"] = errors
-        if not jobs:
+        if not rows:
             out["hint"] = "Nothing matched. Try broader keywords, fewer filters or other sources."
         return out
+
+    def _fit_context(self) -> dict:
+        try:
+            from jobs_helper.insights.fit import candidate_context
+            profile = pol.load_candidate() or {}
+            return candidate_context(pol.current_cv_text(profile), profile)
+        except Exception:  # noqa: BLE001 — fit is a bonus, never a reason to fail a search
+            return {}
 
     # ------------------------------------------------------------ get_job
     def get_job(self, job_id: str) -> dict:
@@ -121,6 +144,16 @@ class JobsService:
             data["description"] = data["description"][:DESCRIPTION_MAX] + "…"
         data["is_open"] = self._is_open(job)
         data["apply_target"] = apply_target(job)
+        try:
+            from jobs_helper.insights.fit import fit
+            from jobs_helper.insights.redflags import vacancy_flags
+            _remember([job])
+            ctx = self._fit_context()
+            if ctx.get("has_cv"):
+                data["fit"] = fit(job, ctx)
+            data["warnings"] = vacancy_flags(job)
+        except Exception:  # noqa: BLE001
+            pass
         if not data["is_open"]:
             data["similar_open_jobs"] = self._similar(job)
         return data
@@ -212,6 +245,15 @@ class JobsService:
                          status="prepared" if outcome.status == "prepared" else outcome.status,
                          policy="dry_run" if dry else policy, cv_path=cv_path, cover_path=cover_path,
                          screenshot=outcome.screenshot or "", submitted_by=self.role, answers=answers or {})
+        if outcome.status != "failed":
+            try:
+                from jobs_helper import pipeline
+                pipeline.on_apply(app_id, {"job_id": job.id, "company": job.company or "", "title": job.title, "url": job.url,
+                                           "source": job.source, "target": target, "policy": "dry_run" if dry else policy,
+                                           "cv_variant": "original_file" if original else f"generated:{pol.cv_settings()['template']}"},
+                                  outcome.status, self.tracker.root)
+            except Exception:  # noqa: BLE001 — the tracker row is already written
+                pass
         if outcome.status == "failed":
             return (outcome.error or err("apply_failed", outcome.message, "Hand the documents to the candidate.")) | {
                 "application_id": app_id, "recorded_as": "failed (nothing was sent)"}
@@ -236,6 +278,33 @@ class JobsService:
         except Exception:  # noqa: BLE001 — a hint is optional
             return []
         return [j.short() for j in found if j.id != job.id and self._is_open(j)][:k]
+
+
+def _dedupe(jobs: list[Job]) -> list[Job]:
+    """The same vacancy is often cross-posted on several boards: keep the first (best-ranked) copy."""
+    from jobs_helper.insights.redflags import _key
+    seen, out = set(), []
+    for j in jobs:
+        k = _key(j) if j.company else j.id
+        if k not in seen:
+            seen.add(k)
+            out.append(j)
+    return out
+
+
+def _remember(jobs: list[Job]) -> None:
+    try:
+        from jobs_helper.insights.redflags import remember
+        remember(jobs)
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def _short(job: Job, ctx: dict) -> dict:
+    if not ctx.get("has_cv"):
+        return job.short()
+    from jobs_helper.insights.fit import short_with_fit
+    return short_with_fit(job, ctx)
 
 
 def _full_name(profile: dict | None) -> str:

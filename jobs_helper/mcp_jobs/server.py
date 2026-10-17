@@ -79,11 +79,13 @@ def search_jobs(
     min_salary: Annotated[int | None, Field(description="Monthly USD; drops vacancies whose known salary is lower")] = None,
     max_experience_years: Annotated[float | None, Field(description="Candidate's experience; drops vacancies requiring more")] = None,
     limit: Annotated[int, Field(description="Max results, 1..20")] = 10,
+    sort_by: Annotated[Literal["relevance", "fit", "date"], Field(description="fit: best match with the candidate's CV first; date: newest first")] = "relevance",
 ) -> dict[str, Any]:
-    """Search OPEN vacancies across DOU, Djinni and Happy Monday. Returns short summaries with job_id;
-    fields that a board does not publish (often salary or experience) are null, not zero."""
+    """Search OPEN vacancies across DOU, Djinni and Happy Monday. Returns short summaries with job_id and, when the
+    candidate has a CV, a fit score 0-100 with knock-outs (years / English / level) and missing skills.
+    Fields that a board does not publish (often salary or experience) are null, not zero."""
     args = {"keywords": keywords, "sources": sources, "remote": remote, "city": city, "min_salary": min_salary,
-            "max_experience_years": max_experience_years, "limit": limit}
+            "max_experience_years": max_experience_years, "limit": limit, "sort_by": sort_by}
     return _safe("search_jobs", args, lambda svc: svc.search_jobs(**args))
 
 
@@ -92,8 +94,9 @@ def get_job(
     job_id: Annotated[str, Field(description="Id from search_jobs, e.g. 'dou:acme/376945', 'djinni:853661-python-dev', 'hm:2049225'")],
 ) -> dict[str, Any]:
     """Full vacancy: description, requirements, experience, salary, work mode, whether it is still open,
-    and apply_target — where the application form lives (board itself, an ATS such as ats:greenhouse,
-    or something that cannot be filled automatically)."""
+    apply_target — where the application form lives (board itself, an ATS such as ats:greenhouse, or something that
+    cannot be filled automatically), fit with the candidate's CV, and warnings (red / green flags: stale or reposted
+    vacancy, pressure language, scam patterns, …). Mention high-risk warnings to the candidate before applying."""
     return _safe("get_job", {"job_id": job_id}, lambda svc: svc.get_job(job_id))
 
 

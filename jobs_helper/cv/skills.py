@@ -6,11 +6,11 @@ TECH = {
     "scala", "sql", "bash", "r", "dart", "elixir", "objective-c",
     # web / frameworks
     "django", "flask", "fastapi", "spring", "spring boot", "node.js", "express", "nestjs", "react", "next.js", "vue",
-    "nuxt", "angular", "svelte", "redux", "react query", "tailwind", "graphql", "rest", "grpc", "websocket", "laravel",
+    "nuxt", "angular", "svelte", "redux", "react query", "tailwind", "graphql", "rest", "grpc", "websocket", "microservices", "laravel",
     "symfony", "rails", ".net", "asp.net", "flutter", "react native", "jquery", "storybook", "webpack", "vite",
     # data / ml
     "pandas", "numpy", "scikit-learn", "pytorch", "tensorflow", "keras", "hugging face", "transformers", "llm", "nlp",
-    "computer vision", "opencv", "spark", "airflow", "dbt", "kafka", "rabbitmq", "celery", "mlflow", "kubeflow",
+    "computer vision", "machine learning", "opencv", "spark", "airflow", "dbt", "kafka", "rabbitmq", "celery", "mlflow", "kubeflow",
     "tableau", "power bi", "looker", "excel", "a/b testing", "statistics",
     # storage
     "postgresql", "mysql", "mongodb", "redis", "elasticsearch", "clickhouse", "snowflake", "bigquery", "dynamodb",

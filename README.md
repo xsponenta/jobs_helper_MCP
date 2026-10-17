@@ -38,7 +38,10 @@ uv run python -m jobs_helper snapshot --query python --query react --name my_sna
 ## Підключення до Claude Code / Claude Desktop (з клону)
 **Claude Code:** у корені є `.mcp.json`. Запусти `claude` у папці репозиторію й підтверди сервери `jobs` і `linkedin`.
 
-**Об'єднаний сервер для користувачів:** `jobs-helper-mcp` (`jobs_helper/mcp_all.py`). Це інструменти обох серверів плюс `get_candidate` (профіль і текст CV). Розширення Claude Desktop збирається командою `uv run python scripts/build_mcpb.py` у `release/jobs-helper.mcpb`.
+**Об'єднаний сервер для користувачів:** `jobs-helper-mcp` (`jobs_helper/mcp_all.py`). Це інструменти обох серверів плюс:
+- `get_candidate` — профіль, CV, інші документи, збережені факти;
+- `remember_candidate_info` / `forget_candidate_info` — те, що кандидат розповів у чаті, зберігається назавжди;
+- `set_submit_policy` — зміна способу відправки за проханням. Розширення Claude Desktop збирається командою `uv run python scripts/build_mcpb.py` у `release/jobs-helper.mcpb`.
 
 **Claude Desktop:** додай у `claude_desktop_config.json` (шлях до репозиторію — свій):
 ```json

@@ -24,7 +24,8 @@
         "run",
         "--directory",
         "${__dirname}",
-        "server.py"
+        "server.py",
+        "${user_config.documents}"
       ],
       "env": {
         "JOBS_HOME": "${HOME}/.jobs_helper",
@@ -42,20 +43,32 @@
         "JOBS_CANDIDATE_SALARY_USD": "${user_config.salary_usd}",
         "JOBS_CANDIDATE_NOTICE": "${user_config.notice_period}",
         "JOBS_CANDIDATE_ENGLISH": "${user_config.english}",
-        "JOBS_CANDIDATE_CV": "${user_config.cv_file}",
         "JOBS_CANDIDATE_CONSENT": "${user_config.consent}",
-        "JOBS_POLICY_DOU": "${user_config.policy_dou}",
-        "JOBS_POLICY_DJINNI": "${user_config.policy_djinni}",
-        "JOBS_POLICY_HAPPYMONDAY": "${user_config.policy_happymonday}",
-        "JOBS_POLICY_ATS": "${user_config.policy_ats}",
-        "JOBS_POLICY_LINKEDIN": "${user_config.policy_linkedin}"
+        "PYTHONUTF8": "1",
+        "PYTHONIOENCODING": "utf-8",
+        "JOBS_AUTO_DOU": "${user_config.auto_dou}",
+        "JOBS_AUTO_DJINNI": "${user_config.auto_djinni}",
+        "JOBS_AUTO_HAPPYMONDAY": "${user_config.auto_happymonday}",
+        "JOBS_AUTO_ATS": "${user_config.auto_ats}"
       }
     }
   },
   "tools": [
     {
       "name": "get_candidate",
-      "description": "Ваш профіль і текст CV"
+      "description": "Ваш профіль, CV, документи і збережені факти"
+    },
+    {
+      "name": "remember_candidate_info",
+      "description": "Запамʼятати новий факт або відповідь назавжди"
+    },
+    {
+      "name": "forget_candidate_info",
+      "description": "Видалити збережений факт"
+    },
+    {
+      "name": "set_submit_policy",
+      "description": "Змінити спосіб відправки для сайту"
     },
     {
       "name": "search_jobs",
@@ -67,7 +80,7 @@
     },
     {
       "name": "apply",
-      "description": "Заповнити й надіслати відгук за вашою політикою для сайту"
+      "description": "Заповнити й надіслати відгук"
     },
     {
       "name": "get_profile",
@@ -133,8 +146,8 @@
     },
     "linkedin": {
       "type": "string",
-      "title": "LinkedIn (посилання на профіль)",
-      "description": "Потрібен Djinni для відгуку без входу",
+      "title": "Посилання на ваш профіль LinkedIn",
+      "description": "Наприклад linkedin.com/in/ваше-імʼя. Вставляється в поле «LinkedIn» у формах відгуку на всіх сайтах. Окремо: Djinni без входу в акаунт приймає відгук лише з цим посиланням.",
       "required": false
     },
     "telegram": {
@@ -169,10 +182,11 @@
       "default": "B2",
       "required": false
     },
-    "cv_file": {
+    "documents": {
       "type": "file",
-      "title": "Ваше CV",
-      "description": "PDF, DOCX, MD або TXT. Єдине джерело фактів для адаптації",
+      "multiple": true,
+      "title": "Ваше CV та інші документи",
+      "description": "PDF, DOCX, MD або TXT. Основне CV — файл зі словом CV / Resume / Резюме в назві (або перший). Можна додати портфоліо, сертифікати, рекомендації: це джерела фактів. Додавайте й видаляйте файли тут будь-коли.",
       "required": true
     },
     "consent": {
@@ -182,39 +196,32 @@
       "default": false,
       "required": false
     },
-    "policy_dou": {
-      "type": "string",
-      "title": "Відправка на DOU: manual / confirm / auto",
-      "description": "manual — ви натискаєте «Надіслати» самі (DOU забороняє автоматичні відгуки)",
-      "default": "manual",
+    "auto_djinni": {
+      "type": "boolean",
+      "title": "Djinni: надсилати відгуки автоматично",
+      "description": "Вимкнено: помічник заповнює форму, а ви підтверджуєте у вікні «Надіслати / Скасувати».",
+      "default": false,
       "required": false
     },
-    "policy_djinni": {
-      "type": "string",
-      "title": "Відправка на Djinni: manual / confirm / auto",
-      "description": "confirm — помічник заповнює, ви підтверджуєте у вікні",
-      "default": "confirm",
+    "auto_ats": {
+      "type": "boolean",
+      "title": "Сайти компаній (Greenhouse, Lever, Ashby…): надсилати автоматично",
+      "description": "Вимкнено: ви підтверджуєте кожну заявку у вікні.",
+      "default": false,
       "required": false
     },
-    "policy_happymonday": {
-      "type": "string",
-      "title": "Відправка на Happy Monday: manual / confirm / auto",
-      "default": "confirm",
-      "required": false,
-      "description": "confirm — помічник заповнює, ви підтверджуєте у вікні"
+    "auto_happymonday": {
+      "type": "boolean",
+      "title": "Happy Monday: надсилати автоматично",
+      "description": "Вимкнено: ви підтверджуєте кожну заявку у вікні.",
+      "default": false,
+      "required": false
     },
-    "policy_ats": {
-      "type": "string",
-      "title": "Відправка на сайтах компаній (ATS): manual / confirm / auto",
-      "default": "confirm",
-      "required": false,
-      "description": "Greenhouse, Lever, Ashby, PeopleForce, BambooHR, сайти компаній"
-    },
-    "policy_linkedin": {
-      "type": "string",
-      "title": "Пости в LinkedIn: manual / confirm / auto",
-      "description": "manual — відкривається вікно LinkedIn з готовим текстом",
-      "default": "manual",
+    "auto_dou": {
+      "type": "boolean",
+      "title": "DOU: надсилати автоматично (не рекомендовано)",
+      "description": "Вимкнено: помічник заповнює форму, «Надіслати» натискаєте ви. Правила DOU забороняють автоматичні відгуки — за порушення можуть заблокувати профіль.",
+      "default": false,
       "required": false
     }
   },

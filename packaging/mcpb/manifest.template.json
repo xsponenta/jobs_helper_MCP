@@ -3,7 +3,7 @@
   "name": "jobs-helper",
   "display_name": "Jobs Helper: DOU, Djinni, Happy Monday",
   "version": "__VERSION__",
-  "description": "Пошук вакансій на DOU, Djinni і Happy Monday та відгук із чесно адаптованим CV. Пости в LinkedIn.",
+  "description": "Пошук вакансій на DOU, Djinni і Happy Monday, відгук із чесно адаптованим CV, оцінка й покращення CV, пости в LinkedIn.",
   "long_description": "Помічник шукає вакансії на DOU, Djinni і Happy Monday, адаптує ваше CV під кожну (лише факти з вашого CV), заповнює форму відгуку у вашому браузері — на самому сайті або на сайті компанії (Greenhouse, Lever, Ashby, PeopleForce, BambooHR тощо) — і відправляє так, як ви обрали для кожного сайту: ви натискаєте «Надіслати» самі, підтверджуєте у вікні або автоматично. Якщо сайт попросить увійти, відкриється вікно входу — пароль бачите тільки ви. Також готує LinkedIn-пост і текст для оновлення профілю.",
   "author": {
     "name": "Ihor Ivanyshyn",
@@ -69,6 +69,14 @@
     {
       "name": "set_submit_policy",
       "description": "Змінити спосіб відправки для сайту"
+    },
+    {
+      "name": "review_cv",
+      "description": "Оцінка CV: бали, проблеми, як покращити (і під конкретну вакансію)"
+    },
+    {
+      "name": "render_cv",
+      "description": "Зібрати CV з гарним дизайном, читабельне для ATS"
     },
     {
       "name": "search_jobs",

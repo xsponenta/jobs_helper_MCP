@@ -41,7 +41,11 @@ uv run python -m jobs_helper snapshot --query python --query react --name my_sna
 **Об'єднаний сервер для користувачів:** `jobs-helper-mcp` (`jobs_helper/mcp_all.py`). Це інструменти обох серверів плюс:
 - `get_candidate` — профіль, CV, інші документи, збережені факти;
 - `remember_candidate_info` / `forget_candidate_info` — те, що кандидат розповів у чаті, зберігається назавжди;
-- `set_submit_policy` — зміна способу відправки за проханням. Розширення Claude Desktop збирається командою `uv run python scripts/build_mcpb.py` у `release/jobs-helper.mcpb`.
+- `set_submit_policy` — зміна способу відправки за проханням;
+- `review_cv` — оцінка CV (ATS, повнота, сила формулювань, читабельність, відповідність вакансії) з конкретними виправленнями та зображенням першої сторінки для візуальної оцінки дизайну;
+- `render_cv` — PDF із професійним одноколонковим дизайном (`modern` / `classic` / `compact`) з автопідгонкою під 1–2 сторінки; `make_default` робить його основним CV.
+
+Розширення Claude Desktop збирається командою `uv run python scripts/build_mcpb.py` у `release/jobs-helper.mcpb`.
 
 **Claude Desktop:** додай у `claude_desktop_config.json` (шлях до репозиторію — свій):
 ```json
@@ -134,6 +138,7 @@ jobs_helper/
   snapshot.py        знімки вакансій для оцінки
   mcp_jobs/          MCP-сервер `jobs` (server.py) і його логіка (service.py)
   apply/             заповнення форм: planner, mock- і browser-бекенд, PDF із CV
+  cv/                шаблони CV (render.py) та оцінка CV (review.py)
   linkedin/          OAuth і логіка LinkedIn
   mcp_linkedin/      MCP-сервер `linkedin`
   mcp_all.py         об'єднаний сервер для Claude Desktop / Code

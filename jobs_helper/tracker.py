@@ -31,7 +31,7 @@ class Tracker:
     def rows(self) -> list[dict]:
         if not self.csv_path.exists():
             return []
-        with self.csv_path.open(newline="") as f:
+        with self.csv_path.open(newline="", encoding="utf-8") as f:
             return list(csv.DictReader(f))
 
     def find_active(self, candidate: str, job_id: str) -> dict | None:
@@ -47,8 +47,8 @@ class Tracker:
     def save_documents(self, app_id: str, cv_markdown: str, cover_letter: str) -> tuple[str, str]:
         d = self.docs_dir / app_id
         d.mkdir(parents=True, exist_ok=True)
-        (d / "cv.md").write_text(cv_markdown.strip() + "\n")
-        (d / "cover_letter.md").write_text(cover_letter.strip() + "\n")
+        (d / "cv.md").write_text(cv_markdown.strip() + "\n", encoding="utf-8")
+        (d / "cover_letter.md").write_text(cover_letter.strip() + "\n", encoding="utf-8")
         return str((d / "cv.md").relative_to(self.root)), str((d / "cover_letter.md").relative_to(self.root))
 
     def add(self, **row) -> dict:
@@ -56,7 +56,7 @@ class Tracker:
         if isinstance(row["answers"], dict):
             row["answers"] = json.dumps(row["answers"], ensure_ascii=False)
         new = not self.csv_path.exists()
-        with self.csv_path.open("a", newline="") as f:
+        with self.csv_path.open("a", newline="", encoding="utf-8") as f:
             w = csv.DictWriter(f, fieldnames=FIELDS)
             if new:
                 w.writeheader()

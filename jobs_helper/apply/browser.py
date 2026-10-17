@@ -18,13 +18,15 @@ import uuid
 from difflib import SequenceMatcher
 from pathlib import Path
 
+from playwright.sync_api import Error as PWError
 from playwright.sync_api import Frame, Page, sync_playwright
 from playwright.sync_api import TimeoutError as PWTimeout
 
 from jobs_helper import config
 from jobs_helper.apply.backend import ApplyOutcome, ApplyRequest
 from jobs_helper.apply.fields import FormField
-from jobs_helper.apply.page_js import CONFIRM_BANNER, EXTRACT_FORM, SUCCESS_RE, VALIDATION_ERRORS
+from jobs_helper.apply.page_js import (CONFIRM_BANNER, EXTRACT_FORM, PAGE_EXCERPT, SET_NUMBER, SUCCESS_RE,
+                                      VALIDATION_ERRORS)
 from jobs_helper.apply.pdf import render_pdfs
 from jobs_helper.apply.planner import plan_fill
 from jobs_helper.apply.sites import LOGIN_URLS
@@ -36,6 +38,9 @@ APPLY_BUTTON = re.compile(r"^\s*(apply( now| for this (job|position))?|i'?m inte
 COOKIE_BUTTON = re.compile(r"^\s*(accept( all)?( cookies)?|allow all|agree|i agree|got it|ok|decline all|reject all|"
                            r"прийняти( все)?|погоджуюсь|зрозуміло|дозволити)\s*$", re.I)
 TRUTHY = {"yes", "true", "1", "так", "y"}
+BOT_WALL = re.compile(r"access (is )?(temporarily )?(denied|restricted|blocked)|доступ (тимчасово )?(обмежено|заборонено)|"
+                      r"are you (a )?(robot|human)|verify you are (a )?human|attention required|unusual traffic|"
+                      r"you have been blocked|вас було заблоковано", re.I)
 
 
 def _err(code, message, hint="", retryable=False):
@@ -59,6 +64,8 @@ class BrowserBackend:
             return ApplyOutcome("failed", error=_err("external_apply", "No application URL is known.", "Open the vacancy manually."))
         tmp = workspace() / ".tmp" / uuid.uuid4().hex[:10]
         pdfs = render_pdfs({"cv": req.cv_markdown, "cover_letter": req.cover_letter}, tmp)
+        if req.original_cv and Path(req.original_cv).suffix.lower() in (".pdf", ".docx", ".doc"):
+            pdfs["cv"] = Path(req.original_cv)    # upload the candidate's own designed CV
         headless = self.force_headless if self.force_headless is not None else req.dry_run
         profile = PROFILES_DIR / (req.target if req.target in ("dou", "djinni", "happymonday") else "ats")
         with sync_playwright() as p:
@@ -66,11 +73,15 @@ class BrowserBackend:
                                                        viewport={"width": 1280, "height": 900})
             try:
                 return self._run(ctx, req, start_url, pdfs, tmp)
-            except PWTimeout as e:
-                return ApplyOutcome("failed", error=_err("form_changed", f"Page did not behave as expected: {str(e)[:160]}",
-                                                         "Hand the prepared documents and the link to the candidate.", False))
+            except PWError as e:   # timeouts, detached elements, closed pages: a page problem, not a server crash
+                return ApplyOutcome("failed", error=_err("form_changed", f"The page did not behave as expected: {str(e).splitlines()[0][:200]}",
+                                                         "Hand the prepared documents and the link to the candidate.", False)
+                                    | {"url": start_url})
             finally:
-                ctx.close()
+                try:
+                    ctx.close()
+                except Exception:  # noqa: BLE001 — the candidate may have closed the window
+                    pass
 
     # ------------------------------------------------------------ main flow
     def _run(self, ctx, req: ApplyRequest, start_url: str, pdfs: dict[str, Path], tmp: Path) -> ApplyOutcome:
@@ -89,37 +100,19 @@ class BrowserBackend:
         if isinstance(blocked, ApplyOutcome):
             return blocked
         page = blocked
-        frame, schema = self._find_form(page, req.target)
-        if not schema["fields"]:
-            self._shot(page, tmp, "no_form")
-            return ApplyOutcome("failed", screenshot=str(tmp / "no_form.png"), error=_err(
-                "external_apply", "No application form could be found on the page.",
-                "Give the candidate the link and the prepared documents.", False) | {"url": page.url})
-
-        fields, dom = self._to_fields(schema["fields"])
-        cover = req.cover_letter
-        if req.target == "djinni" and frame.locator("input[name=anon_apply]").count():
-            # anonymous Djinni apply: the message itself must contain a LinkedIn profile (or the candidate logs in)
-            linkedin = (req.profile.get("links") or {}).get("linkedin")
-            if not linkedin:
-                return ApplyOutcome("failed", error=_err("not_logged_in", "Anonymous Djinni apply needs a LinkedIn URL.",
-                    "Add the LinkedIn URL to the candidate profile, or log in to Djinni (`jobs-helper login djinni`)."))
-            cover = f"{cover.rstrip()}\n\nLinkedIn: {linkedin}"
-        plan = plan_fill(fields, req.profile, req.answers, req.job.source, req.cv_markdown, cover)
-        if not plan.complete:
-            return ApplyOutcome("needs_input", filled=plan.origin, questions=plan.questions,
-                                message=f"{len(plan.questions)} required field(s) need an answer.")
-        for f in fields:
-            if f.id in plan.values:
-                self._fill(frame, dom[f.id], f, plan.values[f.id], pdfs)
+        prepared = self._prepare(ctx, page, req, pdfs, tmp)
+        if isinstance(prepared, ApplyOutcome):
+            return prepared
+        page, frame, schema, plan, notes = prepared
         page.wait_for_timeout(500)
         shot = self._shot(page, tmp, "filled")
 
         if req.dry_run:
-            return ApplyOutcome("prepared", filled=plan.origin, screenshot=shot, message="Form filled (dry run): nothing was sent.")
+            return ApplyOutcome("prepared", filled=plan.origin, screenshot=shot, message="Form filled (dry run): nothing was sent.",
+                                extra={"adjusted": notes} if notes else {})
         if not schema["submit"]:
             return ApplyOutcome("failed", filled=plan.origin, screenshot=shot,
-                                error=_err("form_changed", "Submit button not found.", "Let the candidate finish manually."))
+                                error=_err("form_changed", "Submit button not found.", "Let the candidate finish manually.") | {"url": page.url})
 
         if req.policy == "manual":
             frame.evaluate(CONFIRM_BANNER, ["Форму заповнено", "Перевірте дані й натисніть кнопку відправки на сторінці самостійно. "
@@ -138,7 +131,63 @@ class BrowserBackend:
         if schema["captcha"] and req.policy == "auto":
             return ApplyOutcome("failed", filled=plan.origin, screenshot=shot, error=_err(
                 "captcha_required", "The form shows a captcha.", "Switch this site to 'manual' or let the candidate submit."))
-        return self._submit(page, frame, plan.origin, tmp)
+        out = self._submit(page, frame, plan.origin, tmp)
+        if notes:
+            out.extra["adjusted"] = notes
+        return out
+
+    def _prepare(self, ctx, page: Page, req: ApplyRequest, pdfs: dict[str, Path], tmp: Path):
+        """Find the form, plan values, fill. Retried once when the page navigates mid-way (SPA forms)."""
+        for attempt in (1, 2):
+            frame, schema = self._find_form(page, req.target)
+            page = frame.page          # the form may live in a new tab opened by "Apply"
+            if not schema["fields"] and _bot_wall(page):
+                # anti-bot wall: never try to get around it — hand the page over to the candidate
+                if req.dry_run:
+                    return ApplyOutcome("failed", screenshot=self._shot(page, tmp, "blocked"), error=_err(
+                        "blocked_by_site", "The site blocks automated browsers on this page.",
+                        "Give the candidate the link and the prepared documents to apply manually.", False) | {"url": page.url})
+                page.main_frame.evaluate(CONFIRM_BANNER, ["Сайт не пускає автоматичний браузер",
+                                                "Заповніть і надішліть форму в цьому вікні самостійно — CV та лист уже підготовлені. "
+                                                "Помічник дочекається підтвердження.", None, None])
+                return self._await_human_submit(page, {}, self._shot(page, tmp, "blocked"))
+            if not schema["fields"]:
+                self._shot(page, tmp, "no_form")
+                if req.target == "dou":
+                    return ApplyOutcome("failed", screenshot=str(tmp / "no_form.png"), error=_err(
+                        "not_logged_in", "The DOU application form did not appear (DOU shows it only to logged-in users).",
+                        "Log in to DOU in the opened window (or `jobs-helper login dou`) and apply again.", True))
+                return ApplyOutcome("failed", screenshot=str(tmp / "no_form.png"), error=_err(
+                    "external_apply", "No application form could be found on the page.",
+                    "Give the candidate the link and the prepared documents.", False) | {"url": page.url})
+            fields, dom = self._to_fields(schema["fields"])
+            cover = req.cover_letter
+            if req.target == "djinni" and frame.locator("input[name=anon_apply]").count():
+                # anonymous Djinni apply: the message itself must contain a LinkedIn profile (or the candidate logs in)
+                linkedin = (req.profile.get("links") or {}).get("linkedin")
+                if not linkedin:
+                    return ApplyOutcome("failed", error=_err("not_logged_in", "Anonymous Djinni apply needs a LinkedIn URL.",
+                        "Add the LinkedIn URL to the candidate profile, or log in to Djinni (`jobs-helper login djinni`)."))
+                cover = f"{cover.rstrip()}\n\nLinkedIn: {linkedin}"
+            plan = plan_fill(fields, req.profile, req.answers, req.job.source, req.cv_markdown, cover)
+            if not plan.complete:
+                return ApplyOutcome("needs_input", filled=plan.origin, questions=plan.questions,
+                                    message=f"{len(plan.questions)} required field(s) need an answer.")
+            try:
+                notes = {}
+                for f in fields:
+                    if f.id in plan.values:
+                        note = self._fill(frame, dom[f.id], f, plan.values[f.id], pdfs)
+                        if note:
+                            notes[f.label] = note
+                return page, frame, schema, plan, notes
+            except PWError as e:
+                if attempt == 2 or not re.search(r"closed|detached|destroyed|navigat", str(e), re.I):
+                    raise
+                page = ctx.pages[-1] if ctx.pages else page     # the form moved to another URL / tab
+                page.wait_for_load_state("domcontentloaded")
+                page.wait_for_timeout(2500)
+        raise PWError("form kept changing while being filled")
 
     # ------------------------------------------------------------ site steps
     def _open_form(self, page: Page, ctx, req: ApplyRequest):
@@ -204,7 +253,18 @@ class BrowserBackend:
         return page
 
     def _find_form(self, page: Page, target: str) -> tuple[Frame, dict]:
-        root = "form.js-inbox-reply-form" if target == "djinni" else None
+        if target == "dou":
+            # only the reply form; the rest of the page (search, comments) is not ours
+            if not page.locator("form:has(textarea)").count():
+                return page.main_frame, {"fields": [], "captcha": False, "submit": False, "url": page.url}
+            root = "form:has(textarea)"
+        else:
+            root = "form.js-inbox-reply-form" if target == "djinni" else None
+        if target not in ("djinni", "dou"):
+            try:   # SPA forms render their inputs a moment after load
+                page.wait_for_selector("input:not([type=hidden]):visible, textarea:visible", timeout=10000)
+            except PWError:
+                pass
         best_frame, best = page.main_frame, page.evaluate(EXTRACT_FORM, root)
         if len(best["fields"]) < 2 and target not in ("djinni", "dou"):
             page2 = self._click_apply(page, page.context, None)
@@ -233,9 +293,16 @@ class BrowserBackend:
             dom[fid] = r
         return fields, dom
 
-    def _fill(self, frame: Frame, raw: dict, f: FormField, value: str, pdfs: dict[str, Path]) -> None:
+    def _fill(self, frame: Frame, raw: dict, f: FormField, value: str, pdfs: dict[str, Path]) -> str | None:
+        """Fills one control; returns a note when the value had to be adjusted (e.g. rounded to a slider step)."""
         sel = lambda i: f'[data-jh-id="{i}"]'  # noqa: E731
         el = frame.locator(sel(raw["dom"][0]))
+        if f.type in ("range", "number"):
+            v = el.evaluate(SET_NUMBER, value)
+            if v is None:
+                raise PWError(f"non-numeric value for numeric field '{f.label}'")
+            asked = float(re.sub(r"[^0-9.]", "", str(value)) or "nan")
+            return f"{asked:g} → {v:g} (rounded to the field's step / range)" if abs(v - asked) > 1e-9 else None
         if f.type == "file":
             el.set_input_files(str(pdfs["cover_letter" if f.key == "cover_letter" else "cv"]))
         elif f.type == "radio":
@@ -251,6 +318,7 @@ class BrowserBackend:
                 el.select_option(label=raw["options"][idx])
         else:
             el.fill(value)
+        return None
 
     # ------------------------------------------------------------ submit / wait
     def _submit(self, page: Page, frame: Frame, filled: dict, tmp: Path) -> ApplyOutcome:
@@ -263,13 +331,17 @@ class BrowserBackend:
         except PWTimeout:
             invalid = frame.evaluate(VALIDATION_ERRORS)
             shot = self._shot(page, tmp, "after_submit")
+            excerpt = _excerpt(page)
             if invalid:
                 return ApplyOutcome("failed", filled=filled, screenshot=shot, error=_err(
                     "form_validation", f"The site rejected {len(invalid)} field(s) after submit.",
-                    "Check the screenshot; let the candidate finish manually.", False))
+                    "Let the candidate finish manually; the page text is attached.", False) | {"url": page.url, "page_excerpt": excerpt})
             return ApplyOutcome("submitted", filled=filled, screenshot=shot,
-                                message="Submit clicked; the site showed no explicit confirmation (check the screenshot).")
-        return ApplyOutcome("submitted", filled=filled, screenshot=self._shot(page, tmp, "submitted"), message="Application submitted.")
+                                message="Submit clicked, but the site showed no explicit confirmation. Read page_excerpt and tell "
+                                        "the candidate to check their email / account on the site.",
+                                extra={"confirmed": False, "url": page.url, "page_excerpt": excerpt})
+        return ApplyOutcome("submitted", filled=filled, screenshot=self._shot(page, tmp, "submitted"), message="Application submitted.",
+                            extra={"confirmed": True, "url": page.url, "page_excerpt": _excerpt(page)})
 
     def _await_human_submit(self, page: Page, filled: dict, shot: str) -> ApplyOutcome:
         try:
@@ -299,6 +371,29 @@ class BrowserBackend:
         except Exception:  # noqa: BLE001
             return ""
         return str(path)
+
+
+CHALLENGE_HOSTS = re.compile(r"captcha-delivery\.com|datadome|challenges\.cloudflare\.com|perimeterx|px-captcha|hcaptcha\.com/captcha", re.I)
+
+
+def _bot_wall(page: Page) -> bool:
+    """Anti-bot interstitial (DataDome, Cloudflare, PerimeterX …), possibly drawn inside an iframe."""
+    for fr in page.frames:
+        if CHALLENGE_HOSTS.search(fr.url or ""):
+            return True
+        try:
+            if BOT_WALL.search(fr.evaluate(PAGE_EXCERPT)):
+                return True
+        except Exception:  # noqa: BLE001 — detached / cross-origin frames
+            continue
+    return False
+
+
+def _excerpt(page: Page) -> str:
+    try:
+        return page.evaluate(PAGE_EXCERPT)
+    except Exception:  # noqa: BLE001
+        return ""
 
 
 def _check(locator) -> None:

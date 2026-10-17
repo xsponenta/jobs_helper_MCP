@@ -55,7 +55,7 @@ class LinkedInService:
     def _record(self, **row) -> None:
         path = workspace() / "linkedin_posts.csv"
         new = not path.exists()
-        with path.open("a", newline="") as f:
+        with path.open("a", newline="", encoding="utf-8") as f:
             w = csv.DictWriter(f, fieldnames=POST_FIELDS)
             if new:
                 w.writeheader()
@@ -143,7 +143,7 @@ class LinkedInService:
                  "## Навички (Skills)", "", ", ".join(s.strip() for s in skills if s.strip())]
         if experience_bullets:
             lines += ["", "## Пункти досвіду", ""] + [f"- {b.strip()}" for b in experience_bullets if b.strip()]
-        path.write_text("\n".join(lines) + "\n")
+        path.write_text("\n".join(lines) + "\n", encoding="utf-8")
         return {"ok": True, "status": "saved", "path": str(path),
                 "message": "Profile text saved; the candidate pastes it into LinkedIn (the API cannot edit profiles)."}
 

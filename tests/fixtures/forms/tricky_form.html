@@ -1,0 +1,27 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Tricky form</title></head>
+<body>
+<!-- readonly transparent mirror of the email (like an auto-join widget) must be skipped -->
+<div style="position:relative">
+  <label for="full_email">Email</label>
+  <input id="full_email" name="full_email" readonly style="opacity:0;position:absolute;inset:0">
+  <input id="em" name="email" type="email" required aria-label="Email address">
+</div>
+<label for="n">Full name *</label><input id="n" name="name" required>
+<label for="sal">Desired salary, USD *</label>
+<input id="sal" name="salary" type="range" min="0" max="10000" step="100" required>
+<label for="cv">Resume *</label><input id="cv" name="resume" type="file" required>
+<!-- web component with an open shadow root -->
+<x-field id="host"></x-field>
+<button type="submit" id="go">Send</button>
+<script>
+customElements.define('x-field', class extends HTMLElement {
+  constructor() { super(); const r = this.attachShadow({mode: 'open'});
+    r.innerHTML = '<label for="tg">Telegram</label><input id="tg" name="telegram">'; } });
+document.getElementById('go').addEventListener('click', e => {
+  e.preventDefault();
+  const data = { email: em.value, name: n.value, salary: sal.value, telegram: host.shadowRoot.getElementById('tg').value,
+                 resume: cv.files.length ? cv.files[0].name : '' };
+  document.body.innerHTML = '<h2>Thank you for applying!</h2><pre id="data">' + JSON.stringify(data) + '</pre>';
+});
+</script>
+</body></html>

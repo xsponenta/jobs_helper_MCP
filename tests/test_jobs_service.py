@@ -133,3 +133,12 @@ def test_missing_profile(env, monkeypatch):
     monkeypatch.setenv("JOBS_CANDIDATE", str(env / "absent.yaml"))
     svc = make(env)
     assert svc.apply(first(svc, "djinni").id, CV, COVER)["error"] == "candidate_profile_missing"
+
+
+def test_retry_needs_only_answers(env):
+    svc = make(env)
+    job = first(svc, "ats:greenhouse")
+    assert svc.apply(job.id, CV, COVER)["error"] == "needs_input"
+    r = svc.apply(job.id, answers={"q_rate": "25"})                    # no documents on the retry
+    assert r["error"] == "needs_input" and [q["field_id"] for q in r["questions"]] == ["consent"]
+    assert svc.apply("dou:never-seen/1", answers={"x": "y"})["error"] == "missing_documents"

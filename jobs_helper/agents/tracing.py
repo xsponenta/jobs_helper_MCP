@@ -34,7 +34,7 @@ class Tracer:
     def event(self, kind: str, agent: str | None = None, **data: Any) -> None:
         rec = {"ts": now_iso(), "t": round(time.perf_counter() - self.t0, 2), "run_id": self.run_id,
                "kind": kind, "agent": agent, **data}
-        with self.path.open("a") as f:
+        with self.path.open("a", encoding="utf-8") as f:
             f.write(json.dumps(rec, ensure_ascii=False, default=str) + "\n")
         if self.verbose:
             print(self._format(rec), file=sys.stderr, flush=True)
@@ -73,4 +73,4 @@ class Tracer:
 
 
 def load_trace(path: Path) -> list[dict]:
-    return [json.loads(x) for x in path.read_text().split("\n") if x.strip()]
+    return [json.loads(x) for x in path.read_text(encoding="utf-8").split("\n") if x.strip()]

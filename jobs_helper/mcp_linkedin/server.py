@@ -40,7 +40,7 @@ def _safe(tool: str, args: dict, fn) -> dict[str, Any]:
              "ok": "error" not in result, "error": result.get("error"), "status": result.get("status"),
              "ms": round((time.perf_counter() - started) * 1000)}
     try:
-        with (workspace() / "mcp_calls.jsonl").open("a") as f:
+        with (workspace() / "mcp_calls.jsonl").open("a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
     except OSError:
         pass

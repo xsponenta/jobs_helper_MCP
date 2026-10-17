@@ -18,6 +18,7 @@ class ApplyRequest:
     answers: dict[str, str]
     policy: str                 # manual | confirm | auto
     dry_run: bool
+    original_cv: str | None = None   # the candidate's own CV file to upload instead of the generated PDF
 
 
 @dataclass
@@ -28,6 +29,7 @@ class ApplyOutcome:
     screenshot: str | None = None
     message: str = ""
     error: dict | None = None   # structured error for the agent (code/message/hint/retryable)
+    extra: dict = field(default_factory=dict)   # e.g. url / page_excerpt / confirmed after submit, value adjustments
 
 
 class ApplyBackend(Protocol):

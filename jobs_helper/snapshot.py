@@ -39,7 +39,7 @@ def take_snapshot(queries: list[SearchQuery], name: str | None = None, with_deta
         "queries": [q.model_dump() for q in queries],
         "errors": errors,
         "jobs": [j.model_dump() for j in jobs.values()],
-    }, ensure_ascii=False, indent=1))
+    }, ensure_ascii=False, indent=1), encoding="utf-8")
     return path
 
 
@@ -51,7 +51,7 @@ def latest_snapshot() -> Path | None:
 class SnapshotStore:
     def __init__(self, path: Path | str):
         self.path = Path(path)
-        data = json.loads(self.path.read_text())
+        data = json.loads(self.path.read_text(encoding="utf-8"))
         self.created_at = data.get("created_at")
         self.jobs: dict[str, Job] = {j["id"]: Job(**j) for j in data["jobs"]}
 

@@ -51,7 +51,7 @@ def _audit(tool: str, args: dict, result: dict, started: float) -> None:
              "error": result.get("error"), "status": result.get("status"),
              "application_id": result.get("application_id"), "ms": round((time.perf_counter() - started) * 1000)}
     try:
-        with (workspace() / "mcp_calls.jsonl").open("a") as f:
+        with (workspace() / "mcp_calls.jsonl").open("a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
     except OSError:
         pass
@@ -100,17 +100,19 @@ def get_job(
 @mcp.tool()
 def apply(
     job_id: Annotated[str, Field(description="Vacancy id from search_jobs / get_job")],
-    cv_markdown: Annotated[str, Field(description="CV tailored to this vacancy, markdown, 400-8000 chars; only facts from the candidate's real CV")],
-    cover_letter: Annotated[str, Field(description="Cover letter for this vacancy, 150-3000 chars")],
+    cv_markdown: Annotated[str | None, Field(description="CV tailored to this vacancy, markdown, 400-8000 chars; only facts from the candidate's real CV. May be omitted on a retry for the same job_id")] = None,
+    cover_letter: Annotated[str | None, Field(description="Cover letter for this vacancy, 150-3000 chars. May be omitted on a retry")] = None,
     answers: Annotated[dict[str, str] | None, Field(description="Answers to questions returned earlier as needs_input: {field_id: value}")] = None,
+    attach_original_cv: Annotated[bool, Field(description="Upload the candidate's own CV file (their designed PDF/DOCX) instead of a PDF generated from cv_markdown")] = False,
 ) -> dict[str, Any]:
     """APPLY to a vacancy (state-changing). Fills the application form with the candidate profile, the CV
     and the cover letter, then sends it according to the candidate's per-site policy, and records it in the
     applications tracker. Returns status prepared | awaiting_user | submitted | declined, or a structured
     error: needs_input (with questions), already_applied, job_closed (with similar_open_jobs),
     external_apply (with url), not_logged_in, captcha_required, forbidden, ..."""
-    args = {"job_id": job_id, "cv_markdown": cv_markdown, "cover_letter": cover_letter, "answers": answers}
-    return _safe("apply", args, lambda svc: svc.apply(job_id, cv_markdown, cover_letter, answers))
+    args = {"job_id": job_id, "cv_markdown": cv_markdown, "cover_letter": cover_letter, "answers": answers,
+            "attach_original_cv": attach_original_cv}
+    return _safe("apply", args, lambda svc: svc.apply(job_id, cv_markdown, cover_letter, answers, attach_original_cv))
 
 
 @mcp.resource("jobs://applications", name="applications", description="Applications tracker: every application attempt with its status",

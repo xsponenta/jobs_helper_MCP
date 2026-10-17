@@ -6,7 +6,9 @@ Every failure is returned (never raised) as:
 
 from __future__ import annotations
 
+import json
 import os
+import re
 from datetime import date
 from pathlib import Path
 
@@ -122,7 +124,21 @@ class JobsService:
         return data
 
     # ------------------------------------------------------------ apply
-    def apply(self, job_id: str, cv_markdown: str, cover_letter: str, answers: dict[str, str] | None = None) -> dict:
+    def _draft_path(self, job_id: str) -> Path:
+        return self.tracker.root / "drafts" / (re.sub(r"[^\w.-]+", "_", job_id) + ".json")
+
+    def apply(self, job_id: str, cv_markdown: str | None = None, cover_letter: str | None = None,
+              answers: dict[str, str] | None = None, attach_original_cv: bool = False) -> dict:
+        job_id = (job_id or "").strip()
+        # a retry after needs_input / a failure may send only the answers: reuse the last draft for this job
+        draft_path = self._draft_path(job_id) if job_id else None
+        draft = json.loads(draft_path.read_text(encoding="utf-8")) if draft_path and draft_path.exists() else {}
+        cv_markdown = cv_markdown or draft.get("cv_markdown")
+        cover_letter = cover_letter or draft.get("cover_letter")
+        answers = {**draft.get("answers", {}), **(answers or {})}
+        if not cv_markdown or not cover_letter:
+            return err("missing_documents", "cv_markdown and cover_letter are required on the first apply for a job.",
+                       "Send both documents; later retries for the same job_id may send only answers.", True)
         if self.role not in WRITER_ROLES:
             return err("forbidden", f"Role '{self.role}' may not submit applications.",
                        "Only the reviewer agent calls apply; hand the draft over instead.")
@@ -166,12 +182,22 @@ class JobsService:
         site = policy_site(target)
         policy = pol.load_policies()[site]
         dry = pol.dry_run()
+        original = pol.cv_file(profile) if attach_original_cv else None
+        if attach_original_cv and not original:
+            return err("cv_file_missing", "attach_original_cv was requested but no CV file is configured.",
+                       "Set the CV file in the profile, or apply with the generated CV (attach_original_cv=false).", True)
+        if draft_path:
+            draft_path.parent.mkdir(parents=True, exist_ok=True)
+            draft_path.write_text(json.dumps({"cv_markdown": cv, "cover_letter": cover, "answers": answers},
+                                             ensure_ascii=False), encoding="utf-8")
         outcome = self.backend.apply(ApplyRequest(job=job, target=target, profile=profile, cv_markdown=cv,
-                                                  cover_letter=cover, answers=answers or {}, policy=policy, dry_run=dry))
+                                                  cover_letter=cover, answers=answers, policy=policy, dry_run=dry,
+                                                  original_cv=str(original) if original else None))
         if outcome.status == "needs_input":
-            return err("needs_input", outcome.message, "Answer each question from the CV or candidate.yaml and call apply "
-                       "again with answers={field_id: value}. Questions with human_only=true must be asked to the candidate; "
-                       "never invent answers.", True, questions=outcome.questions, filled=outcome.filled)
+            return err("needs_input", outcome.message, "Answer each question from the CV / profile / saved candidate notes and call "
+                       "apply again with the same job_id and answers={field_id: value} only (the documents are kept). "
+                       "Questions with human_only=true must be asked to the candidate; never invent answers.",
+                       True, questions=outcome.questions, filled=outcome.filled)
 
         app_id = self.tracker.next_id()
         cv_path, cover_path = self.tracker.save_documents(app_id, cv, cover)
@@ -182,10 +208,12 @@ class JobsService:
                          screenshot=outcome.screenshot or "", submitted_by=self.role, answers=answers or {})
         if outcome.status == "failed":
             return (outcome.error or err("apply_failed", outcome.message, "Hand the documents to the candidate.")) | {
-                "application_id": app_id}
+                "application_id": app_id, "recorded_as": "failed (nothing was sent)"}
+        if outcome.status in ("submitted", "awaiting_user") and draft_path and draft_path.exists():
+            draft_path.unlink()
         return {"ok": True, "application_id": app_id, "status": outcome.status, "job_id": job.id,
                 "target": target, "policy": "dry_run" if dry else policy, "filled": outcome.filled,
-                "message": outcome.message}
+                "message": outcome.message, **outcome.extra}
 
     # ------------------------------------------------------------ helpers
     def _is_open(self, job: Job) -> bool:

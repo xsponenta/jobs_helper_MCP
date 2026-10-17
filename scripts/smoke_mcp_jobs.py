@@ -14,7 +14,7 @@ import yaml
 from mcp import ClientSession, StdioServerParameters, stdio_client
 
 ROOT = Path(__file__).resolve().parent.parent
-CV = (ROOT / "scripts" / "sample_cv.md").read_text()
+CV = (ROOT / "scripts" / "sample_cv.md").read_text(encoding="utf-8")
 COVER = ("Dear hiring team, I am a Python backend developer with 3.5 years of commercial experience in Django and "
          "FastAPI. I build REST APIs and background processing with Celery and PostgreSQL, and I would be glad to "
          "bring this experience to your team.")
@@ -40,7 +40,7 @@ async def main():
         "links": {"linkedin": "https://linkedin.com/in/olena-example"},
         "job_preferences": {"desired_salary_usd": 3500, "notice_period": "2 weeks"},
         "languages": {"english": "B2"},
-    }, allow_unicode=True))
+    }, allow_unicode=True), encoding="utf-8")
     env = {**os.environ, "AGENT_ROLE": "reviewer", "JOBS_SNAPSHOT": str(ROOT / "data/snapshots/2026-10-17_eval.json"),
            "JOBS_WORKSPACE": str(tmp / "ws"), "JOBS_CANDIDATE": str(tmp / "candidate.yaml"),
            "JOBS_SETTINGS": str(tmp / "settings.yaml"), "JOBS_TODAY": "2026-10-17", "JOBS_APPLY_BACKEND": "mock"}
@@ -59,7 +59,7 @@ async def main():
         job = show(f"get_job({jid})", await s.call_tool("get_job", {"job_id": jid}))
         show("get_job('garbage')", await s.call_tool("get_job", {"job_id": "garbage"}))
 
-        snap = json.loads(Path(env["JOBS_SNAPSHOT"]).read_text())["jobs"]
+        snap = json.loads(Path(env["JOBS_SNAPSHOT"]).read_text(encoding="utf-8"))["jobs"]
         by_target = {}
         for j in snap:
             t = (j["source"] if j["apply_type"] != "external" else
@@ -74,9 +74,9 @@ async def main():
         show("apply — cv too short", await s.call_tool("apply", {"job_id": by_target["djinni"], "cv_markdown": "hi", "cover_letter": COVER}))
         show("apply — wrong argument type", await s.call_tool("apply", {"job_id": 42}))
 
-    print("\nTRACKER:\n" + (tmp / "ws" / "applications.csv").read_text())
+    print("\nTRACKER:\n" + (tmp / "ws" / "applications.csv").read_text(encoding="utf-8"))
     print("AUDIT LOG (last 3):")
-    for line in (tmp / "ws" / "mcp_calls.jsonl").read_text().split("\n")[-4:-1]:
+    for line in (tmp / "ws" / "mcp_calls.jsonl").read_text(encoding="utf-8").split("\n")[-4:-1]:
         print("  " + line)
 
 

@@ -30,7 +30,7 @@ def seed_workspace(ws: Path, candidate_dir: Path, seed: list[dict]) -> set[str]:
     ws.mkdir(parents=True, exist_ok=True)
     if not seed:
         return set()
-    profile = yaml.safe_load((candidate_dir / "candidate.yaml").read_text())
+    profile = yaml.safe_load((candidate_dir / "candidate.yaml").read_text(encoding="utf-8"))
     name = f"{profile['personal']['first_name']} {profile['personal']['last_name']}"
     tr, ids = Tracker(ws), set()
     for s in seed:
@@ -66,9 +66,9 @@ async def main() -> None:
     p.add_argument("--resume", help="existing runs/eval_* dir: reuse finished runs, run only the missing ones")
     args = p.parse_args()
 
-    spec = yaml.safe_load((HERE / "cases.yaml").read_text())
+    spec = yaml.safe_load((HERE / "cases.yaml").read_text(encoding="utf-8"))
     snapshot = str((config.ROOT / spec["snapshot"]).resolve())
-    jobs = {j["id"]: Job(**j) for j in json.loads(Path(snapshot).read_text())["jobs"]}
+    jobs = {j["id"]: Job(**j) for j in json.loads(Path(snapshot).read_text(encoding="utf-8"))["jobs"]}
     cases = [c for c in spec["cases"] if not args.cases or c["id"] in args.cases.split(",")]
     out_dir = Path(args.resume) if args.resume else config.ROOT / "runs" / f"eval_{datetime.now():%Y%m%d_%H%M%S}"
     results = []
@@ -83,7 +83,7 @@ async def main() -> None:
                 print(f"\n=== {name}", flush=True)
                 try:
                     if args.resume and done.exists():
-                        res = json.loads(done.read_text())
+                        res = json.loads(done.read_text(encoding="utf-8"))
                         seeded = {r["application_id"] for r in Tracker(ws).rows() if r["submitted_by"] == "seed"}
                     else:
                         seeded = seed_workspace(ws, cand, case.get("seed", []))
@@ -105,9 +105,9 @@ async def main() -> None:
                        "final_answer": res.get("final_answer", "")}
                 results.append(row)
                 print(f"--> {'PASS' if row['passed'] else 'FAIL'}: {row['reason']}", flush=True)
-                (out_dir / "results.json").write_text(json.dumps(results, ensure_ascii=False, indent=1))
+                (out_dir / "results.json").write_text(json.dumps(results, ensure_ascii=False, indent=1), encoding="utf-8")
 
-    (out_dir / "report.md").write_text(render_report(results, cases))
+    (out_dir / "report.md").write_text(render_report(results, cases), encoding="utf-8")
     print(f"\nReport: {out_dir / 'report.md'}")
 
 

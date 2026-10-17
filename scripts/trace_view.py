@@ -51,7 +51,7 @@ def row(e: dict) -> str | None:
 
 
 def main(path: Path) -> Path:
-    events = [json.loads(x) for x in path.read_text().split("\n") if x.strip()]
+    events = [json.loads(x) for x in path.read_text(encoding="utf-8").split("\n") if x.strip()]
     rows = "\n".join(r for e in events if (r := row(e)))
     out = path.with_name("trace.html")
     out.write_text(f"""<!doctype html><html lang="uk"><head><meta charset="utf-8">
@@ -65,7 +65,7 @@ td:first-child{{color:var(--muted);white-space:nowrap;font-variant-numeric:tabul
 .badge{{color:#fff;border-radius:6px;padding:1px 8px;font-size:12px;white-space:nowrap}}
 .err td{{background:var(--err)}} .muted{{color:var(--muted)}} code{{font-weight:600}}
 .final{{white-space:pre-wrap;margin-top:6px;padding:8px;border-left:3px solid var(--line)}}
-</style></head><body><h2>Trace · {html.escape(path.parent.name)}</h2><table>{rows}</table></body></html>""")
+</style></head><body><h2>Trace · {html.escape(path.parent.name)}</h2><table>{rows}</table></body></html>""", encoding="utf-8")
     return out
 
 

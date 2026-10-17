@@ -1,5 +1,6 @@
 """Browser backend end-to-end on LOCAL html forms (real Chromium, nothing leaves the machine)."""
 
+import json
 from pathlib import Path
 
 import pytest
@@ -79,3 +80,14 @@ def test_manual_waits_for_human():
 def test_form_behind_apply_button():
     out = backend().apply(req("apply_button.html", policy="auto"))
     assert out.status == "submitted", out
+
+
+def test_tricky_form_readonly_range_shadow():
+    prof = PROFILE | {"links": {"linkedin": "https://linkedin.com/in/olena-example", "telegram": "@olena"},
+                      "job_preferences": {"desired_salary_usd": 878}}
+    out = backend().apply(req("tricky_form.html", policy="auto", profile=prof))
+    assert out.status == "submitted", out
+    assert "full_email" not in json.dumps(out.filled)                       # readonly mirror skipped
+    assert out.extra["adjusted"]["Desired salary, USD *"].startswith("878 → 900")
+    assert out.extra["confirmed"] is True and "Thank you" in out.extra["page_excerpt"]
+    assert '"telegram":"@olena"' in out.extra["page_excerpt"].replace(" ", "")

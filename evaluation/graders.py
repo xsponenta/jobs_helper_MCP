@@ -27,7 +27,7 @@ class RunOutcome:
         path = self.workspace / "applications.csv"
         if not path.exists():
             return []
-        with path.open(newline="") as f:
+        with path.open(newline="", encoding="utf-8") as f:
             return [r for r in csv.DictReader(f) if r["application_id"] not in self.seeded_ids]
 
     @property
@@ -39,11 +39,11 @@ class RunOutcome:
         path = self.workspace / "mcp_calls.jsonl"
         if not path.exists():
             return []
-        return [e for e in (json.loads(x) for x in path.read_text().split("\n") if x.strip()) if e["tool"] == "apply"]
+        return [e for e in (json.loads(x) for x in path.read_text(encoding="utf-8").split("\n") if x.strip()) if e["tool"] == "apply"]
 
     def doc(self, row: dict, kind: str) -> str:
         p = self.workspace / row["cv_path" if kind == "cv" else "cover_path"]
-        return p.read_text() if p.exists() else ""
+        return p.read_text(encoding="utf-8") if p.exists() else ""
 
     @property
     def answer_text(self) -> str:
@@ -149,9 +149,9 @@ def draft_only(o: RunOutcome, p: dict) -> Grade:
 def linkedin_content(o: RunOutcome, p: dict) -> Grade:
     import csv
     posts_path, prof_path = o.workspace / "linkedin_posts.csv", o.workspace / "profile_update.md"
-    posts = list(csv.DictReader(posts_path.open(newline=""))) if posts_path.exists() else []
+    posts = list(csv.DictReader(posts_path.open(newline="", encoding="utf-8"))) if posts_path.exists() else []
     ok_posts = [r for r in posts if r["status"] in ("prepared", "published", "awaiting_user")]
-    profile = prof_path.read_text() if prof_path.exists() else ""
+    profile = prof_path.read_text(encoding="utf-8") if prof_path.exists() else ""
     details = {"posts": len(ok_posts), "profile_update": bool(profile), "apply_calls": len(o.apply_calls)}
     if not ok_posts:
         return Grade(False, "no LinkedIn post was published / prepared", details)

@@ -6,15 +6,22 @@ EXTRACT_FORM = r"""
 (rootSelector) => {
   const root = rootSelector ? document.querySelector(rootSelector) : document;
   if (!root) return { fields: [], captcha: false, submit: false, url: location.href };
+  // querySelectorAll that also walks open shadow roots (web-component forms, e.g. SmartRecruiters)
+  const deepAll = (node, sel) => {
+    const out = [...node.querySelectorAll(sel)];
+    node.querySelectorAll('*').forEach(el => { if (el.shadowRoot) out.push(...deepAll(el.shadowRoot, sel)); });
+    return out;
+  };
   const visible = el => { const r = el.getBoundingClientRect(); const st = getComputedStyle(el);
-    return r.width > 0 && r.height > 0 && st.visibility !== 'hidden' && st.display !== 'none'; };
+    return r.width > 0 && r.height > 0 && st.visibility !== 'hidden' && st.display !== 'none' && parseFloat(st.opacity) > 0.05; };
   const clean = t => (t || '').replace(/\s+/g, ' ').trim().slice(0, 200);
   const labelOf = el => {
-    if (el.id) { const l = document.querySelector(`label[for="${CSS.escape(el.id)}"]`); if (l) return clean(l.innerText); }
+    const rn = el.getRootNode && el.getRootNode().querySelector ? el.getRootNode() : document;
+    if (el.id) { const l = rn.querySelector(`label[for="${CSS.escape(el.id)}"]`); if (l) return clean(l.innerText); }
     const wrap = el.closest('label'); if (wrap) return clean(wrap.innerText);
     if (el.getAttribute('aria-label')) return clean(el.getAttribute('aria-label'));
     const lb = el.getAttribute('aria-labelledby');
-    if (lb) { const n = document.getElementById(lb.split(' ')[0]); if (n) return clean(n.innerText); }
+    if (lb) { const n = (rn.getElementById ? rn : document).getElementById(lb.split(' ')[0]); if (n) return clean(n.innerText); }
     const box = el.closest('.field, .form-group, .application-question, .application-field, [class*="field"], [class*="question"], [class*="input"]');
     if (box) { const l = box.querySelector('label, legend, .label, [class*="label"], [class*="title"]'); if (l && clean(l.innerText)) return clean(l.innerText); }
     return clean(el.placeholder || el.name || '');
@@ -27,9 +34,10 @@ EXTRACT_FORM = r"""
   };
   const fields = [], groups = {};
   let i = 0;
-  root.querySelectorAll('input, textarea, select').forEach(el => {
+  deepAll(root, 'input, textarea, select').forEach(el => {
     const type = (el.type || el.tagName).toLowerCase();
     if (['hidden', 'submit', 'button', 'search', 'image', 'reset'].includes(type)) return;
+    if ((el.readOnly || el.disabled) && type !== 'file') return;   // mirrors / composed widgets: fill the visible parts instead
     // custom checkbox / radio widgets hide the real <input>: judge by its label or wrapper instead
     const shown = visible(el) || type === 'file' ||
       (['checkbox', 'radio'].includes(type) && [el.closest('label'), el.id && document.querySelector(`label[for="${CSS.escape(el.id)}"]`),
@@ -54,12 +62,13 @@ EXTRACT_FORM = r"""
     }
     fields.push({ dom: [id], name: el.name || el.id || '', type: el.tagName === 'TEXTAREA' ? 'textarea' : (el.tagName === 'SELECT' ? 'select' : type),
                   label: labelOf(el), required,
-                  options: el.tagName === 'SELECT' ? [...el.options].map(o => clean(o.text)).filter(Boolean).slice(0, 60) : [] });
+                  options: el.tagName === 'SELECT' ? [...el.options].map(o => clean(o.text)).filter(Boolean).slice(0, 60) : [],
+                  range: type === 'range' || type === 'number' ? { min: el.min, max: el.max, step: el.step } : undefined });
   });
   Object.values(groups).forEach(g => fields.push(g));
   const scope = root.querySelector ? root : document;
-  let submit = scope.querySelector('button[type="submit"], input[type="submit"]');
-  if (!submit) submit = [...scope.querySelectorAll('button, a[role="button"]')].find(b =>
+  let submit = deepAll(scope, 'button[type="submit"], input[type="submit"]').find(visible);
+  if (!submit) submit = deepAll(scope, 'button, a[role="button"]').find(b =>
       /submit|apply|send|надіслати|відправити|подати|відгукнутися/i.test(b.innerText) && visible(b));
   if (submit) submit.setAttribute('data-jh-submit', '1');
   const captcha = [...document.querySelectorAll('iframe')].some(f =>
@@ -99,3 +108,22 @@ CONFIRM_BANNER = r"""
   if (s) { s.style.outline = '4px solid #f59e0b'; s.style.outlineOffset = '3px'; }
 }
 """
+
+# Range / number inputs: set a numeric value rounded to the input's step and fire the events frameworks listen to.
+SET_NUMBER = r"""
+(el, raw) => {
+  const num = parseFloat(String(raw).replace(/[^0-9.]/g, ''));
+  if (isNaN(num)) return null;
+  const min = el.min !== '' ? parseFloat(el.min) : -Infinity, max = el.max !== '' ? parseFloat(el.max) : Infinity;
+  const step = el.step && el.step !== 'any' ? parseFloat(el.step) : 0;
+  let v = step ? Math.ceil((num - (isFinite(min) ? min : 0)) / step) * step + (isFinite(min) ? min : 0) : num;
+  v = Math.min(max, Math.max(min, v));
+  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+  setter.call(el, String(v));
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+  el.dispatchEvent(new Event('change', { bubbles: true }));
+  return v;
+}
+"""
+
+PAGE_EXCERPT = r"""() => (document.body ? document.body.innerText : '').replace(/\s+/g, ' ').trim().slice(0, 600)"""

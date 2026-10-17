@@ -125,7 +125,7 @@ def cmd_init(args) -> int:
     home.mkdir(parents=True, exist_ok=True)
     cand = pol.candidate_path()
     if not cand.exists():
-        cand.write_text((files("jobs_helper") / "templates" / "candidate.example.yaml").read_text())
+        cand.write_text((files("jobs_helper") / "templates" / "candidate.example.yaml").read_text(encoding="utf-8"), encoding="utf-8")
         print(f"Створено шаблон профілю: {cand}")
     else:
         print(f"Профіль уже є: {cand}")

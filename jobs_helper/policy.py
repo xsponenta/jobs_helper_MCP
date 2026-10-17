@@ -4,7 +4,9 @@ The agent never chooses how an application is sent: the MCP server reads this fi
 
 from __future__ import annotations
 
+import json
 import os
+import re
 from pathlib import Path
 from typing import Literal
 
@@ -38,18 +40,32 @@ def candidate_path() -> Path:
 
 def _load_yaml(path: Path) -> dict:
     try:
-        return yaml.safe_load(path.read_text()) or {}
+        return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     except FileNotFoundError:
         return {}
 
 
+def _truthy(var: str) -> bool:
+    return os.environ.get(var, "").strip().lower() in ("1", "true", "yes", "так")
+
+
+def auto_toggle(site: str) -> bool:
+    """'Send automatically' switch of the Claude Desktop extension form."""
+    return _truthy(f"JOBS_AUTO_{site.upper()}")
+
+
 def load_policies() -> dict[str, Policy]:
-    """settings.yaml, overridden by JOBS_POLICY_<SITE> (how the Claude Desktop extension passes its form)."""
+    """Order: extension toggle 'auto' > settings.yaml (chosen in chat or CLI) > JOBS_POLICY_<SITE> > defaults."""
     raw = _load_yaml(settings_path()).get("submit_policy", {}) or {}
     out = {}
     for site in SITES:
         env = os.environ.get(f"JOBS_POLICY_{site.upper()}", "").strip().lower()
-        value = env if env in POLICIES else raw.get(site)
+        if auto_toggle(site):
+            value = "auto"
+        elif raw.get(site) in POLICIES:
+            value = raw[site]
+        else:
+            value = env
         out[site] = value if value in POLICIES else DEFAULTS[site]
     return out
 
@@ -66,7 +82,7 @@ def set_policy(site: str, policy: Policy) -> None:
     path = settings_path()
     data = _load_yaml(path)
     data.setdefault("submit_policy", {})[site] = policy
-    path.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False))
+    path.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False), encoding="utf-8")
 
 
 def dry_run() -> bool:
@@ -104,24 +120,77 @@ def load_candidate() -> dict | None:
         if key == "consent_to_processing":
             value = raw.lower() in ("1", "true", "yes", "так")
         (data.setdefault(section, {}) if section else data)[key] = value
+    links = data.get("links") or {}
+    for k in ("linkedin", "github", "portfolio"):
+        v = str(links.get(k) or "").strip()
+        if v and not v.startswith(("http://", "https://")) and "." in v:
+            links[k] = "https://" + v.lstrip("/")
+    saved = {n["question"]: n["text"] for n in list_notes() if n.get("kind") == "answer" and n.get("question")}
+    if saved:
+        data["saved_answers"] = saved
     return data or None
 
 
 CV_NAMES = ("cv.md", "cv.txt", "cv.pdf", "cv.docx")
+DOC_SUFFIXES = (".pdf", ".docx", ".md", ".txt")
+_CV_NAME = re.compile(r"\bcv\b|resume|résumé|резюме|curriculum", re.I)
+
+
+def candidate_files(profile: dict | None = None) -> list[Path]:
+    """Every document the candidate gave us: JOBS_CANDIDATE_FILES (extension form, several files), cv_file, ~/.jobs_helper/cv.*"""
+    profile = profile if profile is not None else (load_candidate() or {})
+    found: list[Path] = []
+    raw = [x for x in os.environ.get("JOBS_CANDIDATE_FILES", "").split(os.pathsep) if x.strip() and not x.startswith("${")]
+    if profile.get("cv_file"):
+        p = Path(str(profile["cv_file"])).expanduser()
+        raw.insert(0, str(p if p.is_absolute() else candidate_path().parent / p))
+    raw += [str(config.HOME / n) for n in CV_NAMES]
+    for item in raw:
+        path = Path(item).expanduser()
+        if path.exists() and path.suffix.lower() in DOC_SUFFIXES and path.resolve() not in [f.resolve() for f in found]:
+            found.append(path)
+    return found
 
 
 def cv_file(profile: dict | None = None) -> Path | None:
+    """The main CV: an explicit cv_file, else the first file named like a CV, else the first document."""
     profile = profile if profile is not None else (load_candidate() or {})
-    if profile.get("cv_file"):
-        path = Path(str(profile["cv_file"])).expanduser()
-        if not path.is_absolute():
-            path = candidate_path().parent / path
-        return path if path.exists() else None
-    for name in CV_NAMES:
-        path = config.HOME / name
-        if path.exists():
-            return path
-    return None
+    files = candidate_files(profile)
+    if profile.get("cv_file") and files:
+        return files[0]
+    return next((f for f in files if _CV_NAME.search(f.stem.replace("_", " "))), files[0] if files else None)
+
+
+# ------------------------------------------------------------ candidate notes (remembered from the chat)
+
+def notes_path() -> Path:
+    return config.HOME / "candidate_notes.json"
+
+
+def list_notes() -> list[dict]:
+    try:
+        return json.loads(notes_path().read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+
+
+def add_note(text: str, kind: str = "fact", question: str | None = None) -> dict:
+    notes = list_notes()
+    note = {"id": f"N{max([int(n['id'][1:]) for n in notes] or [0]) + 1}", "kind": kind, "text": text.strip(),
+            "question": (question or "").strip() or None, "created": __import__("datetime").date.today().isoformat()}
+    notes.append(note)
+    notes_path().parent.mkdir(parents=True, exist_ok=True)
+    notes_path().write_text(json.dumps(notes, ensure_ascii=False, indent=1), encoding="utf-8")
+    return note
+
+
+def remove_note(note_id: str) -> bool:
+    notes = list_notes()
+    kept = [n for n in notes if n["id"] != note_id]
+    if len(kept) == len(notes):
+        return False
+    notes_path().write_text(json.dumps(kept, ensure_ascii=False, indent=1), encoding="utf-8")
+    return True
 
 
 def read_cv_text(path: Path) -> str:
@@ -133,4 +202,4 @@ def read_cv_text(path: Path) -> str:
     if suffix == ".docx":
         from docx import Document
         return "\n".join(p.text for p in Document(str(path)).paragraphs).strip()
-    return path.read_text(errors="replace").strip()
+    return path.read_text(errors="replace", encoding="utf-8").strip()

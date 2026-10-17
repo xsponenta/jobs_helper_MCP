@@ -38,13 +38,13 @@ def load_client() -> dict:
     path = secrets_dir() / "linkedin.env"
     if not path.exists():
         raise FileNotFoundError(f"{path} not found: put LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET there")
-    pairs = (line.split("=", 1) for line in path.read_text().splitlines() if "=" in line and not line.startswith("#"))
+    pairs = (line.split("=", 1) for line in path.read_text(encoding="utf-8").splitlines() if "=" in line and not line.startswith("#"))
     return {k.strip(): v.strip() for k, v in pairs}
 
 
 def load_token() -> dict | None:
     try:
-        tok = json.loads(token_path().read_text())
+        tok = json.loads(token_path().read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return None
     tok["expired"] = time.time() > tok.get("obtained_at", 0) + tok.get("expires_in", 0) - 300
@@ -82,5 +82,5 @@ def oauth_login() -> str:
     r.raise_for_status()
     tok = r.json() | {"obtained_at": int(time.time())}
     secrets_dir().mkdir(parents=True, exist_ok=True)
-    token_path().write_text(json.dumps(tok, indent=2))
+    token_path().write_text(json.dumps(tok, indent=2), encoding="utf-8")
     return f"LinkedIn connected; token valid for {tok.get('expires_in', 0) // 86400} days (scope: {tok.get('scope')})"

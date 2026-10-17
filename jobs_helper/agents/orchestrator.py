@@ -31,8 +31,8 @@ MAX_ROUNDS = 2
 
 
 def candidate_block(candidate_dir: Path) -> tuple[str, dict]:
-    cv = (candidate_dir / "cv.md").read_text()
-    profile = yaml.safe_load((candidate_dir / "candidate.yaml").read_text()) or {}
+    cv = (candidate_dir / "cv.md").read_text(encoding="utf-8")
+    profile = yaml.safe_load((candidate_dir / "candidate.yaml").read_text(encoding="utf-8")) or {}
     public = {k: v for k, v in profile.items() if k != "sensitive"}   # sensitive answers stay with the server
     text = f"## Candidate CV (the only source of facts)\n\n{cv}\n\n## Candidate profile\n\n```yaml\n{yaml.safe_dump(public, allow_unicode=True)}```"
     return text, profile
@@ -120,7 +120,7 @@ async def run_request(request: str, candidate_dir: Path, mode: str = "multi", *,
     result = await (run_multi if mode == "multi" else run_single)(request, candidate_dir, ctx)
     result |= {"mode": mode, "run_dir": str(run_dir), "workspace": ctx.server_env["JOBS_WORKSPACE"]}
     ctx.tracer.event("run_end", None, final_answer=result["final_answer"])
-    (run_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=1, default=str))
+    (run_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
     return result
 
 

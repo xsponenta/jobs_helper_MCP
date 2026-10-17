@@ -29,13 +29,13 @@ class HappyMondaySource(Source):
     # ------------------------------------------------------------ index
     def _load_index(self) -> dict:
         try:
-            return json.loads(config.HM_INDEX_PATH.read_text())
+            return json.loads(config.HM_INDEX_PATH.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             return {}
 
     def _save_index(self, idx: dict) -> None:
         config.HM_INDEX_PATH.parent.mkdir(parents=True, exist_ok=True)
-        config.HM_INDEX_PATH.write_text(json.dumps(idx, ensure_ascii=False))
+        config.HM_INDEX_PATH.write_text(json.dumps(idx, ensure_ascii=False), encoding="utf-8")
 
     def sitemap(self) -> list[tuple[str, str]]:
         xml = fetch_text(SITEMAP, ttl=3600)

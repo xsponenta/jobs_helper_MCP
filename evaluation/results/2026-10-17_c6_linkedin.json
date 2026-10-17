@@ -1,0 +1,88 @@
+[
+ {
+  "case": "c1_best_python",
+  "mode": "multi",
+  "rep": 1,
+  "passed": true,
+  "reason": "1 suitable application(s): dou:evolved-ideas/376823",
+  "details": {
+   "applied": [
+    "dou:evolved-ideas/376823"
+   ],
+   "problems": {},
+   "fabrications": []
+  },
+  "seconds": 50.11,
+  "agent_runs": 2,
+  "turns": 12,
+  "tool_calls": 8,
+  "tool_errors": [],
+  "cost_usd": 0.1794,
+  "output_tokens": 6923,
+  "final_answer": "Я підготувала відгук на найкращу вакансію: Middle/Senior Python Engineer в Evolved Ideas (DOU, remote). Заявка A-0001 має статус prepared. Форму заповнено в режимі dry run, тож нічого не надіслано. Щоб відгукнутися, подай заявку вручну на DOU або змін режим відправки в налаштуваннях.\n\nЧому ця вакансія: вона вимагає 3+ роки Python з FastAPI або Django, а в тебе 3,5 роки і обидва фреймворки. Celery, PostgreSQL, Docker, Linux та англійська B2 теж збігаються.\n\nПрогалини: GCP, Kubernetes, MySQL/MongoDB і досвід розподілених систем. У листі про GCP і Kubernetes сказано чесно, і нічого зайвого в резюме не додано.\n\nОдне виправлення: я прибрала з резюме речення «Strong in testing and CI, and in making services faster», бо цього немає в оригінальному CV.\n\nЗапасну вакансію Antenor (Djinni) не подавала: ти просила один відгук, і вона слабше підходить."
+ },
+ {
+  "case": "c1_best_python",
+  "mode": "single",
+  "rep": 1,
+  "passed": true,
+  "reason": "1 suitable application(s): dou:evolved-ideas/376823",
+  "details": {
+   "applied": [
+    "dou:evolved-ideas/376823"
+   ],
+   "problems": {},
+   "fabrications": []
+  },
+  "seconds": 19.53,
+  "agent_runs": 1,
+  "turns": 7,
+  "tool_calls": 5,
+  "tool_errors": [],
+  "cost_usd": 0.0749,
+  "output_tokens": 2431,
+  "final_answer": "Я обрала одну вакансію: Middle/Senior Python Engineer, Evolved Ideas (dou:evolved-ideas/376823), remote. Заявку підготовлено (id A-0001, статус prepared), але не надіслано. Політика сайту — dry run: форму заповнено резюме й супровідним листом, нічого не відправлено. Щоб подати заявку, відправте її вручну на DOU.\n\nЧому ця вакансія:\n- Вона вимагає 3+ роки Python з FastAPI або Django. У вас 3,5 року і обидва фреймворки.\n- Celery, Linux, PostgreSQL і Docker теж є у вашому досвіді.\n- Англійська Upper-Intermediate, у вас B2.\n- Вакансія відкрита, remote, подається на самому DOU.\n\nПрогалини, про які я чесно написала в листі:\n- Немає GCP: з хмарних сервісів у вас лише базовий AWS.\n- Немає Kubernetes і MongoDB.\n- Немає досвіду з розподіленими системами, TDD/DDD і Playwright.\n- Вакансія просить досвід з AI-інструментами розробки, у резюме його немає, тому я його не вказувала.\n\nВідхилені вакансії:\n- Antenor (djinni:829310): потрібні FastStream, SQLAlchemy, RabbitMQ, MongoDB, PostGIS і експертиза в high-load. Збігів набагато менше.\n- Suntech Innovation (dou:suntech-innovation/376945): потрібні Kafka, глибокі знання БД і async, плюс on-call. Подача йде через зовнішній BambooHR, який інструмент не заповнює.\n- Luxoft, PLANEKS, Altamira та AltexSoft: це senior-рівень або вимога 5+ років.\n- Ajax Systems (djinni:853661): у пошуку не вказано режим роботи, тож remote не підтверджено.\n- GlobalLogic (djinni:853644): trainee-рівень.\n- WorkHold.AI (dou:workeron-ai/376455): це QA Automation, а не backend.\n\nЗарплату вакансія не вказує, тому зіставити її з вашими бажаними $3500 не вдалося."
+ },
+ {
+  "case": "c6_linkedin",
+  "mode": "multi",
+  "rep": 1,
+  "passed": true,
+  "reason": "post (1003 chars) + profile update saved, no private data or invented skills",
+  "details": {
+   "posts": 1,
+   "profile_update": true,
+   "apply_calls": 0,
+   "problems": []
+  },
+  "seconds": 85.04,
+  "agent_runs": 2,
+  "turns": 10,
+  "tool_calls": 2,
+  "tool_errors": [],
+  "cost_usd": 0.2539,
+  "output_tokens": 13030,
+  "final_answer": "Пост ще не опубліковано: він збережений як чернетка (статус prepared, режим dry run). Оновлення профілю збережено у файл, але в LinkedIn його треба вставити вручну.\n\n**Пост.** Я перевірила текст за вашим CV, усі факти підтверджені. Єдина правка: у рядку «чисту архітектуру компонентів» прибрала слово «чисту», бо в CV його немає. Щоб пост вийшов, його треба опублікувати вручну або підтвердити публікацію за вашою політикою.\n\n**Профіль.** Заголовок, розділ «Про себе», навички та пункти досвіду збережено у `profile_update.md` (статус saved). Вставте їх у LinkedIn самостійно, бо API не дозволяє редагувати профіль. У тексті немає телефону й email. Нотис-період, зарплата та рівень англійської не вказані.\n\n**Вакансії.** Ви не просили подаватися на вакансії, тому заявок немає."
+ },
+ {
+  "case": "c6_linkedin",
+  "mode": "single",
+  "rep": 1,
+  "passed": true,
+  "reason": "post (962 chars) + profile update saved, no private data or invented skills",
+  "details": {
+   "posts": 1,
+   "profile_update": true,
+   "apply_calls": 0,
+   "problems": []
+  },
+  "seconds": 16.1,
+  "agent_runs": 1,
+  "turns": 4,
+  "tool_calls": 2,
+  "tool_errors": [],
+  "cost_usd": 0.0371,
+  "output_tokens": 1929,
+  "final_answer": "Пост не опубліковано. Політика публікації в акаунті зараз «dry run», тому статус — prepared: чернетку збережено, але в LinkedIn вона не з'явилася. Щоб пост вийшов, змініть політику публікації на confirm або auto і повторіть запит. Можна також скопіювати текст вручну.\n\n**Пост.** У ньому сказано, що ви шукаєте роль Frontend React-розробниці. Є ваші досягнення з CV: конверсія +9%, LCP з 4,1 с до 1,8 с, покриття тестами 85%, Storybook для 3 команд, 12 проєктів на React + Redux. Також вказано стек, пошук продуктової компанії із сильною фронтенд-культурою, формат «тільки remote» і рівні мов. Телефона та email у пості немає.\n\n**Оновлення профілю.** Збережено у `workspace/profile_update.md`. Воно містить:\n- новий headline;\n- розділ About;\n- список навичок тільки з CV;\n- покращені bullets для досвіду.\n\nLinkedIn API не дозволяє редагувати профіль, тому вставте цей текст у профіль вручну.\n\nУсі факти взято лише з вашого CV та профілю."
+ }
+]

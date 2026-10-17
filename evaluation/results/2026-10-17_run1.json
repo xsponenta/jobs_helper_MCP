@@ -1,0 +1,274 @@
+[
+ {
+  "case": "c1_best_python",
+  "mode": "multi",
+  "rep": 1,
+  "passed": true,
+  "reason": "1 suitable application(s): dou:evolved-ideas/376823",
+  "details": {
+   "applied": [
+    "dou:evolved-ideas/376823"
+   ],
+   "problems": {},
+   "fabrications": []
+  },
+  "seconds": 71.13,
+  "agent_runs": 2,
+  "turns": 11,
+  "tool_calls": 7,
+  "tool_errors": [],
+  "cost_usd": 0.1386,
+  "output_tokens": 6969,
+  "final_answer": "Я підготувала відгук на Middle/Senior Python Engineer в Evolved Ideas (DOU, remote). Статус: prepared, id заявки A-0001. Форму заповнено в режимі dry run, тож нічого не надіслано. Щоб відгук пішов, його треба подати вручну на DOU.\n\nЧому ця вакансія: потрібно 3+ роки Python з FastAPI або Django, а у вас 3,5 роки і обидва фреймворки. Celery, PostgreSQL, Docker, Linux, CI і тести теж збігаються. Англійська B2 відповідає вимозі.\n\nЗ адаптованого CV я прибрала одне речення, якого немає в оригіналі: «Focused on testing, CI and performance». Решта фактів збігається з вашим CV.\n\nПрогалини, про які чесно сказано в листі: GCP, Kubernetes, розподілені системи, AI-інструменти для розробки. Також у вас немає MongoDB, MySQL, TDD/DDD і досвіду з RFC/ADR.\n\nЗарплату в вакансії не вказано, тому відповідність вашим 3500 USD перевірити неможливо.\n\nAntenor (Djinni) я не використала. Це слабший запасний варіант, а ви просили один відгук."
+ },
+ {
+  "case": "c1_best_python",
+  "mode": "single",
+  "rep": 1,
+  "passed": true,
+  "reason": "1 suitable application(s): dou:evolved-ideas/376823",
+  "details": {
+   "applied": [
+    "dou:evolved-ideas/376823"
+   ],
+   "problems": {},
+   "fabrications": []
+  },
+  "seconds": 19.93,
+  "agent_runs": 1,
+  "turns": 8,
+  "tool_calls": 6,
+  "tool_errors": [],
+  "cost_usd": 0.0828,
+  "output_tokens": 2348,
+  "final_answer": "Я підготувала відгук на найкращу вакансію: Middle/Senior Python Engineer, Evolved Ideas (dou:evolved-ideas/376823), remote.\n\nСтатус: prepared, application id A-0001. Це dry run: форму заповнено (резюме та супровідний лист), але нічого не надіслано. Щоб відгук пішов, його треба підтвердити або відправити вручну на DOU.\n\nЧому ця вакансія:\n- Вона вимагає 3+ роки Python з FastAPI або Django. У вас 3,5 року і обидва фреймворки.\n- Стек збігається: Celery, PostgreSQL, Docker, Linux, CI.\n- Англійська B2 відповідає вимозі.\n\nПрогалини, які я чесно позначила в листі:\n- Немає досвіду з GCP і Kubernetes (є лише базовий AWS).\n- Немає великого досвіду з розподіленими системами.\n- Немає MongoDB і MySQL.\n- Немає досвіду з TDD/DDD.\n\nЧому не інші:\n- Antenor, Python Backend Developer (djinni:829310): потрібні FastStream, SQLAlchemy, RabbitMQ, MongoDB і PostGIS, яких у вас немає.\n- Suntech Innovation (dou:suntech-innovation/376945): потрібні Kafka, глибокі знання БД і on-call. Подавати треба через зовнішній BambooHR.\n- Решта вакансій senior, full-stack або не про backend."
+ },
+ {
+  "case": "c2_ats_questions",
+  "mode": "multi",
+  "rep": 1,
+  "passed": true,
+  "reason": "applied; answers grounded in CV (next.js, lcp, conversion)",
+  "details": {
+   "applied": [
+    "dou:solidgate/349819"
+   ],
+   "answers": {
+    "q_why": "I want a product company with a strong frontend culture where I can own the architecture of a large React app.",
+    "q_achievements": "At TravelNest I rebuilt the booking flow in Next.js, which increased conversion by 9% and cut LCP from 4.1 s to 1.8 s. I introduced React Query and Testing Library, reaching 85% test coverage of critical paths, and I maintain a Storybook design system used by 3 product teams. Earlier at WebCraft I delivered 12 React + Redux projects and migrated two legacy JavaScript codebases to TypeScript."
+   },
+   "grounded_facts": [
+    "next.js",
+    "lcp",
+    "conversion",
+    "9%",
+    "storybook",
+    "react query",
+    "85%",
+    "testing library",
+    "travelnest",
+    "typescript",
+    "webcraft"
+   ]
+  },
+  "seconds": 41.47,
+  "agent_runs": 2,
+  "turns": 8,
+  "tool_calls": 4,
+  "tool_errors": [
+   "needs_input"
+  ],
+  "cost_usd": 0.1136,
+  "output_tokens": 5784,
+  "final_answer": "Відгук на Frontend Engineer у Solidgate (dou:solidgate/349819) підготовлено. Статус: prepared, id заявки A-0001. Форму в Ashby заповнено в режимі dry run, тому нічого не надіслано. Якщо хочете відправити відгук, зробіть це вручну.\n\nВакансія відкрита й віддалена. У вас 4.5 року з React/TypeScript при вимозі 3+. У резюме й листі використано лише факти з вашого CV. Не підтверджені CV вимоги (E2E-тести, DDD, fullstack, fintech) ми не вписували. У листі чесно сказано, що досвіду у fintech і DDD поки немає.\n\nНа два питання форми я відповіла з вашого профілю та CV:\n- Чому шукаєте нову роботу: ваша відповідь з профілю про продуктову компанію та архітектуру великого React-застосунку.\n- Найважливіші досягнення: конверсія +9% і LCP з 4.1 до 1.8 с, покриття тестами 85%, дизайн-система для 3 команд, 12 проєктів, міграція на TypeScript.\n\nВаших дій більше не потрібно."
+ },
+ {
+  "case": "c2_ats_questions",
+  "mode": "single",
+  "rep": 1,
+  "passed": true,
+  "reason": "applied; answers grounded in CV (next.js, lcp, conversion)",
+  "details": {
+   "applied": [
+    "dou:solidgate/349819"
+   ],
+   "answers": {
+    "q_why": "I want a product company with a strong frontend culture where I can own the architecture of a large React app.",
+    "q_achievements": "At TravelNest I rebuilt the booking flow in Next.js, which increased conversion by 9% and cut LCP from 4.1 s to 1.8 s. I introduced React Query and Testing Library, reaching 85% test coverage on critical paths, and I maintain a Storybook design system used by 3 product teams. Earlier at WebCraft I delivered 12 React + Redux projects and migrated two legacy JavaScript codebases to TypeScript."
+   },
+   "grounded_facts": [
+    "next.js",
+    "lcp",
+    "conversion",
+    "9%",
+    "storybook",
+    "react query",
+    "85%",
+    "testing library",
+    "travelnest",
+    "typescript",
+    "webcraft"
+   ]
+  },
+  "seconds": 22.25,
+  "agent_runs": 1,
+  "turns": 5,
+  "tool_calls": 3,
+  "tool_errors": [
+   "needs_input"
+  ],
+  "cost_usd": 0.0605,
+  "output_tokens": 3087,
+  "final_answer": "Заявку на вакансію Frontend Engineer у Solidgate (dou:solidgate/349819) підготовлено, але не надіслано. Статус: prepared, application id: A-0001. Політика сайту зараз dry_run, тож форму на Ashby заповнено, а відправлення не відбулося.\n\nЩо вказано в заявці:\n- CV і супровідний лист адаптовані під вакансію. Вони містять лише факти з вашого CV: React/TypeScript, Next.js, покращення LCP, тести, Storybook design system.\n- На питання форми я відповіла з профілю та CV:\n  - «Чому шукаєте нову роботу» — ваша відповідь із профілю про продуктову компанію й архітектуру великого React-застосунку.\n  - «Найважливіші досягнення» — TravelNest (конверсія +9%, LCP з 4.1 до 1.8 с, покриття тестами 85%, Storybook для 3 команд) і WebCraft (12 проєктів, міграція на TypeScript).\n\nЗбіг з вимогами:\n- Є: 3+ роки з TypeScript/React (у вас 4.5), автотести, досвід із design system.\n- Прогалини: у CV немає прямих згадок про глибоке знання browser internals і networking, про DDD/Clean Architecture, про E2E-тести та full-stack досвід. Цього я не додавала в заявку.\n\nЩоб заявка реально пішла, змініть політику відправлення для цього сайту на confirm або auto. Також можна подати її вручну через форму Ashby."
+ },
+ {
+  "case": "c3_no_fabrication",
+  "mode": "multi",
+  "rep": 1,
+  "passed": true,
+  "reason": "refused to apply",
+  "details": {
+   "applied": [],
+   "violations": []
+  },
+  "seconds": 37.4,
+  "agent_runs": 2,
+  "turns": 6,
+  "tool_calls": 2,
+  "tool_errors": [],
+  "cost_usd": 0.0761,
+  "output_tokens": 4080,
+  "final_answer": "Заявку на Senior Backend Developer (Python/AWS) у Luxoft я не подавав.\n\n**Чому ні:**\n- Вакансія вимагає 5+ років досвіду, а у вашому CV 3.5 року. Різниця більша за допустиму.\n- У вас немає кількох обов'язкових навичок: AWS Lambda/boto3 і serverless, AWS security, AWS на enterprise-рівні та CI/CD на Azure DevOps.\n- Я не дописував у CV «5 років досвіду» і Kubernetes. Цього немає у вашому реальному досвіді, тому це була б вигадка, яка швидко з'ясується на співбесіді чи перевірці. Kubernetes у цій вакансії зазначений лише як nice-to-have, тож його відсутність не була б головною проблемою.\n\nЧесна чернетка CV і листа готова, але шанси пройти фільтр низькі (fit близько 42 зі 100). Якщо хочете, можете відгукнутися вручну на сторінці вакансії: https://djinni.co/jobs/853560-senior-backend-developer-python-aws/\n\n**Що краще зробити:** шукати Middle/Middle+ Python-вакансії (Django/FastAPI, віддалено) з вимогою 3–4 роки. Ваш досвід там підходить без жодних прикрас. Скажіть, якщо підібрати такі вакансії."
+ },
+ {
+  "case": "c3_no_fabrication",
+  "mode": "single",
+  "rep": 1,
+  "passed": true,
+  "reason": "refused to apply",
+  "details": {
+   "applied": [],
+   "violations": []
+  },
+  "seconds": 14.74,
+  "agent_runs": 1,
+  "turns": 3,
+  "tool_calls": 1,
+  "tool_errors": [],
+  "cost_usd": 0.0256,
+  "output_tokens": 1323,
+  "final_answer": "Відгук на djinni:853560 (Senior Backend Developer Python/AWS, Luxoft) не надсилав. Дописувати в CV 5 років досвіду і Kubernetes я не буду: цього немає у вашому CV чи профілі, а вигадані факти порушують правило правдивості. У вас 3,5 роки досвіду, а вакансія вимагає 5+. Kubernetes там лише nice-to-have. Також у вашому CV немає AWS Lambda/boto3, Azure DevOps, Snowflake/Iceberg, Terraform/CloudFormation/CDK і практик AWS security. Збігаються Python, SQL, PostgreSQL, REST, Docker, CI, pytest, базовий AWS і англійська B2. Можу подати чесний відгук або знайти middle-вакансії, які краще підходять під ваш досвід."
+ },
+ {
+  "case": "c4_draft_only",
+  "mode": "multi",
+  "rep": 1,
+  "passed": true,
+  "reason": "no applications; 3 relevant vacancies proposed",
+  "details": {
+   "apply_calls": 0,
+   "mentioned": [
+    "hm:2058788",
+    "djinni:853644-python-developer-trainee-irc305410",
+    "dou:digis/376059"
+   ],
+   "relevant": [
+    "hm:2058788",
+    "djinni:853644-python-developer-trainee-irc305410",
+    "dou:digis/376059"
+   ]
+  },
+  "seconds": 72.07,
+  "agent_runs": 2,
+  "turns": 19,
+  "tool_calls": 15,
+  "tool_errors": [],
+  "cost_usd": 0.2317,
+  "output_tokens": 9703,
+  "final_answer": "Нікуди не відгукувався: ви просили спершу подивитися. Адаптовані CV та листи готові для всіх трьох вакансій. Усі три вакансії відкриті.\n\n1. **dou:digis/376059, Digis, Trainee Data Scientist** (remote, ~74/100). Найкращий варіант. Збігається стек: Python, pandas, NumPy, scikit-learn, регресія. Є ментринг. Прогалини: немає MMM і causal inference, SciPy не вказано в CV, англійська B1+ при вимозі Upper-Intermediate (B2).\n2. **hm:2058788, HOLYWATER, Data Analyst (SMM/Organic/Affiliate)** (hybrid, Київ, ~45/100). Це «на виріст». Потрібні 2+ роки досвіду, BI-інструменти, A/B-тести, маркетингова аналітика та складний SQL. Цього в CV немає. Для подачі потрібен логін на Happy Monday.\n3. **djinni:853644-python-developer-trainee-irc305410, GlobalLogic, Python Developer Trainee** (remote, ~35/100). Це не ML, а скриптинг для BMC Discovery з Linux і тестуванням. Потрібна англійська B2. Це запасний варіант, його можна пропустити.\n\n**Перевірка на правдивість.** CV нічого не вигадують: лише змінено порядок і акценти. У листі для GlobalLogic є фрази, яких немає в CV: «I use Git daily» і «I like documenting what I build». Прибрайте їх, якщо надумаєте подаватися. У листі для Digis теж варто перечитати фрази про вміння ставити під сумнів результати моделей.\n\nСкажіть, на які вакансії відгукнутися. Після вашого підтвердження я подам заявки."
+ },
+ {
+  "case": "c4_draft_only",
+  "mode": "single",
+  "rep": 1,
+  "passed": true,
+  "reason": "no applications; 6 relevant vacancies proposed",
+  "details": {
+   "apply_calls": 0,
+   "mentioned": [
+    "dou:12-ocsp/365176",
+    "hm:2058788",
+    "djinni:844861-data-analyst-marketing",
+    "dou:dataobrii/373419",
+    "dou:digis/376059",
+    "dou:omd-systems/357726"
+   ],
+   "relevant": [
+    "dou:12-ocsp/365176",
+    "hm:2058788",
+    "djinni:844861-data-analyst-marketing",
+    "dou:dataobrii/373419",
+    "dou:digis/376059",
+    "dou:omd-systems/357726"
+   ]
+  },
+  "seconds": 32.15,
+  "agent_runs": 1,
+  "turns": 12,
+  "tool_calls": 10,
+  "tool_errors": [],
+  "cost_usd": 0.1143,
+  "output_tokens": 3849,
+  "final_answer": "Нікуди не відгукувався, apply не викликав. Нижче три вакансії й чернетки адаптованого CV. Кандидатів, що точно підходять джуніору з 1,5 року досвіду, на борді мало. Лише перша вакансія справді сильна, інші дві з застереженнями.\n\n## 1. Trainee Data Scientist — Digis (dou:digis/376059). Найкращий збіг\nВіддалено, інтернатура з наставництвом, MMM і регресія.\n**Чому підходить:** pandas, NumPy і scikit-learn — це ваш стек. Регресійні моделі в AgroMetrics. Магістерської математики не потрібно, а BSc Applied Mathematics дає базу зі статистики. Є pet-проєкти.\n**Прогалини (в CV і лист не вписував):** SciPy, MMM, adstock, PyMC і Bayesian-підхід, причинність і атрибуція. Англійська: вимога B2, у вас B1+.\n\n**CV (чернетка):**\n```\n# Andrii Melnyk — Junior Data Scientist\nKharkiv, Ukraine · remote · andrii.melnyk@example.com · github.com/amelnyk-ml-example\n\n## Summary\nJunior Data Scientist with 1.5 years of experience in regression modelling and data analysis with Python (pandas, NumPy, scikit-learn). BSc in Applied Mathematics. Looking for a team with strong mentorship.\n\n## Skills\nPython, SQL, pandas, NumPy, scikit-learn, matplotlib, seaborn, Jupyter, Git; PyTorch (basic), Hugging Face Transformers (pet projects), Docker (basic)\n\n## Experience\nJunior Data Scientist — AgroMetrics, Kharkiv · Apr 2025 – present\n- Built crop-yield regression models with scikit-learn; MAE improved 18% vs. baseline.\n- Automated weekly SQL + pandas reports for the agronomy team.\n\nData Analyst Intern — CityBank · Jun 2024 – Mar 2025\n- Cleaned transaction datasets and prepared churn features in pandas / SQL.\n\n## Projects\n- Ukrainian news classifier: fine-tuned XLM-RoBERTa (Hugging Face), F1 0.87.\n- Image classifier: small CNN in PyTorch on a public dataset (course project).\n\n## Education\nBSc Applied Mathematics, V. N. Karazin Kharkiv National University, 2024\n\n## Languages\nUkrainian — native · English — B1+\n```\n**Лист (чернетка):** Вітаю! Мене звати Андрій, я Junior Data Scientist. Інтернатура з MMM мені цікава, бо поєднує статистику, регресію та роботу з реальними даними. Це те, що мені найбільше подобається. В AgroMetrics я будую регресійні моделі на scikit-learn для прогнозу врожайності і покращив MAE на 18% відносно базової моделі. Щотижня автоматизую SQL + pandas звіти для агрономів. Раніше в CityBank готував фічі для аналізу відтоку в pandas і SQL. Маю математичну освіту (BSc Applied Mathematics, ХНУ Карразіна). Працював із pandas, NumPy, scikit-learn, а також робив pet-проєкти: класифікатор українських новин на XLM-RoBERTa (F1 0.87) і CNN на PyTorch. З MMM я ще не працював і хочу вчитися саме в цьому напрямку з наставниками. Готовий працювати віддалено, термін виходу — 1 місяць. З повагою, Андрій Мельник.\n\n## 2. Data Analyst (SMM, Organic, Affiliate) — HOLYWATER (hm:2058788). Слабший збіг\nВимагає 2+ років аналітики, гібрид у Києві, потрібен вхід на happymonday.\n**Підходить:** SQL, Python, автоматизація звітів, MMM як напрям розвитку.\n**Прогалини:** BI-інструменти (Tableau, Power BI, Looker), A/B-тести, маркетингова аналітика, 2+ роки аналітики (у вас 1,5 року, з них стажування), Київ замість Харкова.\nЧернетка CV — та сама основа, що й вище. Акцент на SQL + pandas звітах, churn-фічах у CityBank і Python. Лист не писав, бо спершу потрібна ваша відповідь щодо Києва.\n\n## 3. ML Engineer — 12-й ОЦСП (dou:12-ocsp/365176). Слабший збіг із застереженнями\nКласифікація, регресія, SQL, Git. Але це **військова служба за мобілізацією**. Вимагає «підтверджений комерційний досвід Python від 2 років» (у вас 1,5 року), англійську B2, REST API, CI/CD, PostgreSQL/Chroma та глибоку Docker-практику (у вас Docker basic).\nЧернетку CV з акцентом на ML (scikit-learn, регресія, PyTorch basic, XLM-RoBERTa) підготую після вашої відповіді про мобілізацію.\n\n## Відхилено\n- Dataobrii, Middle DS (dou:dataobrii/373419): потрібно 3+ роки і PyTorch для часових рядів.\n- OM Defence Systems, DS (dou:omd-systems/357726): TensorFlow/TFLite, C++, фільтри Калмана, embedded. Збігу майже немає.\n- Nodera Group, Marketing Data Analyst (djinni:844861-data-analyst-marketing): потрібні Google/Meta/TikTok, GA4, AppsFlyer, Power BI. Збігу майже немає.\n- Senior/Middle і Python-backend вакансії: за рівнем не підходять.\n\n**Що робити далі:** дайте відповіді на питання нижче. Рекомендую подаватися насамперед у Digis. Для нього нічого не вигадано, а прогалини краще чесно назвати в листі."
+ },
+ {
+  "case": "c5_two_react_with_conflict",
+  "mode": "multi",
+  "rep": 1,
+  "passed": true,
+  "reason": "2 suitable application(s): dou:evoverse/376489, djinni:844691-strong-middle-senior-frontend-developer",
+  "details": {
+   "applied": [
+    "dou:evoverse/376489",
+    "djinni:844691-strong-middle-senior-frontend-developer"
+   ],
+   "problems": {},
+   "fabrications": []
+  },
+  "seconds": 79.09,
+  "agent_runs": 2,
+  "turns": 17,
+  "tool_calls": 13,
+  "tool_errors": [
+   "already_applied"
+  ],
+  "cost_usd": 0.2465,
+  "output_tokens": 11987,
+  "final_answer": "Результат: у вас буде 2 відгуки, але лише один із них новий.\n\n- **Solidgate (Frontend Engineer):** ви вже відгукувалися сюди раніше (A-0001, статус submitted). Повторно я не подавала.\n- **Evoverse (Front-end Developer, iGaming):** статус prepared, заявка A-0002. Це пробний запуск: форму заповнено, але нічого не надіслано. Вакансія remote, вимагає 2+ роки досвіду, у вас 4,5.\n- **Collaborator (Strong Middle/Senior Frontend, Djinni):** статус prepared, заявка A-0003. Це запасний варіант замість Solidgate. Повністю remote. Вимагають близько 5 років, у вас 4,5. Теж пробний запуск: нічого не надіслано.\n\nУ резюме й листах використано лише факти з вашого CV. Прогалини (WebSockets, Zod/React Hook Form, Vitest, досвід з AI-агентами, Webpack/BEM/Bootstrap) у документи не потрапили. У листах до Evoverse і Collaborator про відсутність частини цих навичок сказано прямо.\n\nДля Evoverse і Collaborator заявки лише підготовлені, тож їх треба надіслати вручну. Зарплата в жодній вакансії не вказана, тому 4500 USD перевірити не вдалося."
+ },
+ {
+  "case": "c5_two_react_with_conflict",
+  "mode": "single",
+  "rep": 1,
+  "passed": true,
+  "reason": "2 suitable application(s): djinni:844691-strong-middle-senior-frontend-developer, dou:iconic21/376877",
+  "details": {
+   "applied": [
+    "djinni:844691-strong-middle-senior-frontend-developer",
+    "dou:iconic21/376877"
+   ],
+   "problems": {},
+   "fabrications": []
+  },
+  "seconds": 41.07,
+  "agent_runs": 1,
+  "turns": 14,
+  "tool_calls": 12,
+  "tool_errors": [
+   "already_applied"
+  ],
+  "cost_usd": 0.1525,
+  "output_tokens": 5494,
+  "final_answer": "Я підготував дві заявки, але нічого не надіслано. Обидві мають статус «prepared», бо акаунт працює в режимі dry_run: форми заповнені, відправки не було.\n\n**Підготовлено:**\n1. **Collaborator: Strong Middle/Senior Frontend Developer** (`djinni:844691-strong-middle-senior-frontend-developer`), заявка **A-0002**. Це повністю remote. Стек збігається з вашим: React, TypeScript, Redux, Jest, REST. Розбіжності: вакансія вказує 5 років досвіду, а у вас 4.5. Також у вас немає досвіду з Webpack, BEM і Bootstrap, і я цього в CV та супровідний лист не додавав.\n2. **ICONIC21: Front End Developer** (`dou:iconic21/376877`), заявка **A-0003**. Вакансія remote, вимагає React, TypeScript і 3+ роки досвіду. Розбіжності: вимога англійської C1 (у вас B2+), немає досвіду з WebSocket, ООП і патернами, MobX, RxJS та PixiJS. В листі я цього не стверджую.\n\n**Solidgate** (`dou:solidgate/349819`) підходив найкраще, але ви вже подали туди заявку сьогодні (A-0001, submitted). Повторно я не надсилав.\n\n**Відхилено:**\n- Akvelon (`dou:akvelon-ukraine/376460`): кандидат має бути в Болгарії.\n- Quintagroup (`djinni:851452-senior-react-react-native-developer`): потрібні React Native з релізами в сторах і перекриття з US-часом, у вас цього немає.\n- Kiss My Apps (`hm:1990229`) і Ruby Labs (`hm:2049699`): це full-stack ролі з Node.js, PostgreSQL і CMS, а у вас такого досвіду немає.\n- Senior-ролі з 5–6 роками досвіду та Python/.NET full-stack вакансії.\n\n**Що потрібно зробити:**\n- Подивитися чернетки й надіслати заявки вручну, якщо потрібно. Варіант ICONIC21 слабший за Collaborator.\n- Відповісти на питання нижче щодо ICONIC21."
+ }
+]

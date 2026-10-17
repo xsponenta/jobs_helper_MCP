@@ -72,11 +72,15 @@
     },
     {
       "name": "review_cv",
-      "description": "Оцінка CV: бали, проблеми, як покращити (і під конкретну вакансію)"
+      "description": "Оцінка CV як на відборі: фільтри вакансії, 6 секунд рекрутера, ATS, рівні Bronze–Platinum"
     },
     {
       "name": "render_cv",
-      "description": "Зібрати CV з гарним дизайном, читабельне для ATS"
+      "description": "Переверстати CV у професійний дизайн з унікальною назвою файлу"
+    },
+    {
+      "name": "create_cv",
+      "description": "Створити якісне CV з нуля за вашою розповіддю"
     },
     {
       "name": "search_jobs",
@@ -112,6 +116,15 @@
         "max_applications"
       ],
       "text": "Candidate request: ${arguments.request}. Apply to at most ${arguments.max_applications} vacancies."
+    },
+    {
+      "name": "create_cv_interview",
+      "description": "Створити CV з нуля: коротке інтерв'ю → професійне CV",
+      "arguments": [
+        "target_role",
+        "about_me"
+      ],
+      "text": "Create a CV for the role ${arguments.target_role}. What the candidate said: ${arguments.about_me}"
     }
   ],
   "user_config": {

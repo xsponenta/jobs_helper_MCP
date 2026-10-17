@@ -44,6 +44,9 @@ uv run python -m jobs_helper snapshot --query python --query react --name my_sna
 - `set_submit_policy` — зміна способу відправки за проханням;
 - `review_cv` — оцінка CV так, як його відбирають: відсіювальні фільтри вакансії (роки з дат, назва посади, навички, англійська), 6-секундний перегляд рекрутера, розбір ATS, сила формулювань і хронологія, дизайн, виміряний у PDF. Рівні Bronze → Platinum, бали за кожне виправлення, зображення першої сторінки;
 - `create_cv` (+ промпт `create_cv_interview`) — якісне CV з нуля зі структурованих фактів кандидата;
+- `read_vacancy` (+ промпт `tailor_cv_for_vacancy`) — вакансія за посиланням (LinkedIn, будь-який сайт) або з тексту, з оцінкою CV під неї. Для LinkedIn відкривається лише одна публічна сторінка за посиланням кандидата; Easy Apply лишається за кандидатом;
+- `import_linkedin_profile` — CV з профілю LinkedIn («Зберегти як PDF» або архів даних);
+- `save_profile_update` (+ промпт `linkedin_profile_from_cv`) — тексти профілю LinkedIn з CV: спочатку чернетка, після погодження сторінка з кнопками «Копіювати».
 - `render_cv` — PDF із професійним одноколонковим дизайном (`modern` / `classic` / `compact`) з автопідгонкою під 1–2 сторінки; `make_default` робить його основним CV.
 
 Розширення Claude Desktop збирається командою `uv run python scripts/build_mcpb.py` у `release/jobs-helper.mcpb`.

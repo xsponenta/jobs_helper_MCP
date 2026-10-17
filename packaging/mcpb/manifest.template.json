@@ -3,7 +3,7 @@
   "name": "jobs-helper",
   "display_name": "Jobs Helper: DOU, Djinni, Happy Monday",
   "version": "__VERSION__",
-  "description": "Пошук вакансій на DOU, Djinni і Happy Monday, відгук із чесно адаптованим CV, оцінка й покращення CV, пости в LinkedIn.",
+  "description": "Пошук вакансій на DOU, Djinni, Happy Monday і за посиланнями LinkedIn, відгук з чесно адаптованим CV, оцінка й створення CV, профіль LinkedIn.",
   "long_description": "Помічник шукає вакансії на DOU, Djinni і Happy Monday, адаптує ваше CV під кожну (лише факти з вашого CV), заповнює форму відгуку у вашому браузері — на самому сайті або на сайті компанії (Greenhouse, Lever, Ashby, PeopleForce, BambooHR тощо) — і відправляє так, як ви обрали для кожного сайту: ви натискаєте «Надіслати» самі, підтверджуєте у вікні або автоматично. Якщо сайт попросить увійти, відкриється вікно входу — пароль бачите тільки ви. Також готує LinkedIn-пост і текст для оновлення профілю.",
   "author": {
     "name": "Ihor Ivanyshyn",
@@ -83,6 +83,14 @@
       "description": "Створити якісне CV з нуля за вашою розповіддю"
     },
     {
+      "name": "read_vacancy",
+      "description": "Прочитати вакансію за посиланням (LinkedIn, Work.ua, сайт компанії) або з тексту й оцінити CV під неї"
+    },
+    {
+      "name": "import_linkedin_profile",
+      "description": "CV з вашого профілю LinkedIn (PDF або архів даних)"
+    },
+    {
       "name": "search_jobs",
       "description": "Пошук відкритих вакансій на DOU, Djinni, Happy Monday"
     },
@@ -104,7 +112,7 @@
     },
     {
       "name": "save_profile_update",
-      "description": "Готовий текст для оновлення профілю LinkedIn"
+      "description": "Оновлення профілю LinkedIn з CV: чернетка → ваше погодження → помічник для вставки"
     }
   ],
   "prompts": [
@@ -125,6 +133,22 @@
         "about_me"
       ],
       "text": "Create a CV for the role ${arguments.target_role}. What the candidate said: ${arguments.about_me}"
+    },
+    {
+      "name": "tailor_cv_for_vacancy",
+      "description": "CV під вакансію (посилання LinkedIn або будь-яке інше)",
+      "arguments": [
+        "vacancy"
+      ],
+      "text": "Propose a CV for this vacancy: ${arguments.vacancy}"
+    },
+    {
+      "name": "linkedin_profile_from_cv",
+      "description": "Оновити профіль LinkedIn з CV (з вашим погодженням)",
+      "arguments": [
+        "focus"
+      ],
+      "text": "Update my LinkedIn profile from my CV. Focus: ${arguments.focus}"
     }
   ],
   "user_config": {

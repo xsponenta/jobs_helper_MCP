@@ -86,8 +86,14 @@ class BrowserBackend:
     # ------------------------------------------------------------ main flow
     def _run(self, ctx, req: ApplyRequest, start_url: str, pdfs: dict[str, Path], tmp: Path) -> ApplyOutcome:
         page = ctx.pages[0] if ctx.pages else ctx.new_page()
-        page.goto(start_url, wait_until="domcontentloaded", timeout=45000)
+        resp = page.goto(start_url, wait_until="domcontentloaded", timeout=45000)
         page.wait_for_timeout(1500)
+        if (resp is not None and resp.status >= 400) or re.match(r"^\s*404\b|page (could )?not (be )?found|сторінку не знайдено",
+                                                                 _excerpt(page), re.I):
+            return ApplyOutcome("failed", screenshot=self._shot(page, tmp, "broken_link"), error=_err(
+                "apply_link_broken", f"The application page does not exist (HTTP {resp.status if resp else '?'}): the employer's link is broken.",
+                "Tell the candidate; they can apply via the vacancy page on the job board or contact the company.", False)
+                | {"url": page.url})
         self._dismiss_cookies(page)
 
         blocked = self._open_form(page, ctx, req)

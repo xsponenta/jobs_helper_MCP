@@ -54,7 +54,11 @@ def autofill_allowed(key: str | None, label: str) -> bool:
 def match_field(label: str, input_type: str | None = None) -> str | None:
     if input_type == "file":
         low = label.lower()
-        return "cover_letter" if re.search(r"cover", low) else "resume"
+        if re.search(r"cover|супровідн", low):
+            return "cover_letter"
+        if re.search(r"additional|other files|portfolio|attachments?\b|додатков|портфоліо|інші файли", low) and not re.search(r"resume|\bcv\b|резюме", low):
+            return None          # optional extra uploads: never stuff the CV in there
+        return "resume"
     low = re.sub(r"\s+", " ", label.lower()).strip()
     if input_type == "checkbox":   # a checkbox is never a document; "agree to keep my CV" is consent
         if re.search(r"agree|consent|declare|privacy|gdpr|згод|погоджу|personal data|обробку", low):
